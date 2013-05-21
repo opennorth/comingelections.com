@@ -2,12 +2,16 @@ class ElectionsController < ApplicationController
   # GET /elections
   # GET /elections.json
   def index
-    @elections = Election.all.sort_by(&:start_date)
+    @elections = Election.order(:start_date)
 
     respond_to do |format|
       format.html # index.html.erb
       format.json { render json: @elections }
-      format.csv { render text: @elections.to_csv}
+      format.csv {
+        headers['Content-Type'] = 'text/csv; charset=utf-8; header=present'
+        headers['Content-Disposition'] = %(attachment; filename="upcoming_elections.csv") 
+        send_data @elections.to_csv
+      }
     end
   end
 

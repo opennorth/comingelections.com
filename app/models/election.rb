@@ -4,14 +4,33 @@ class Election < ActiveRecord::Base
 
   attr_accessor :date
 
-  before_create :set_dates
+  before_create :set_dates 
 
-  before_create do 
-    Election.find_all_by_start_date(self.start_date).each do |e|
-      if e.jurisdiction == self.jurisdiction && e.election_type == self.election_type then
-        return false 
+  def self.create_or_update(attributes)
+    election = Election.first_or_initialize(
+        :start_date => attributes['start_date'], 
+        :jurisdiction => attributes['jurisdiction'],
+        :election_type => attributes['election_type'])
+
+      election.scope = attributes['scope']
+      election.division = attributes['division']
+      election.notes = attributes['notes']
+      election.source = attributes['source']
+      election.save!
+  end
+
+  def self.to_csv 
+    @col_sep = ',' 
+    CSV.generate(:col_sep => @col_sep, :row_sep => "\r\n",:headers => :first_row) do |csv|
+      csv << ["id","year","start_date","end_date","division","election_type"]
+      self.all.each do |election|
+        begin
+          csv << election.attributes.values_at("id","year","start_date","end_date","division","election_type")
+        rescue ArgumentError => e # non-UTF8 characters from spammers
+          logger.error "#{e.inspect}: #{row.inspect}"
+        end
       end
-    end
+    end.html_safe
   end
 
 private
@@ -24,3 +43,4 @@ private
     end
   end
 end
+

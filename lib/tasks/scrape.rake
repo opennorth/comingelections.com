@@ -176,7 +176,7 @@ namespace :scrape do
   desc "Save records to database"
   task :db => :environment do
     elections.each do |e|
-      Election.create(
+      Election.create_or_update(
         :year => e[:date].year,
         :start_date => e[:date],
         :end_date => e[:date],
