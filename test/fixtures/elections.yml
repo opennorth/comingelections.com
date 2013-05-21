@@ -1,0 +1,25 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  year: 1
+  start_date: 2013-05-21
+  end_date: 2013-05-21
+  jurisdiction: MyString
+  election_type: MyString
+  : 
+  division: MyString
+  notes: MyString
+  source: MyString
+  updated_at: 2013-05-21 11:48:41
+
+two:
+  year: 1
+  start_date: 2013-05-21
+  end_date: 2013-05-21
+  jurisdiction: MyString
+  election_type: MyString
+  : 
+  division: MyString
+  notes: MyString
+  source: MyString
+  updated_at: 2013-05-21 11:48:41

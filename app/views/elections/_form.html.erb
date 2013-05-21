@@ -1,0 +1,57 @@
+<%= form_for(@election) do |f| %>
+  <% if @election.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@election.errors.count, "error") %> prohibited this election from being saved:</h2>
+
+      <ul>
+      <% @election.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :year %><br />
+    <%= f.number_field :year %>
+  </div>
+  <div class="field">
+    <%= f.label :start_date %><br />
+    <%= f.date_select :start_date %>
+  </div>
+  <div class="field">
+    <%= f.label :end_date %><br />
+    <%= f.date_select :end_date %>
+  </div>
+  <div class="field">
+    <%= f.label :jurisdiction %><br />
+    <%= f.text_field :jurisdiction %>
+  </div>
+  <div class="field">
+    <%= f.label :election_type %><br />
+    <%= f.text_field :election_type %>
+  </div>
+  <div class="field">
+    <%= f.label : %><br />
+    <%= f.text_field : %>
+  </div>
+  <div class="field">
+    <%= f.label :division %><br />
+    <%= f.text_field :division %>
+  </div>
+  <div class="field">
+    <%= f.label :notes %><br />
+    <%= f.text_field :notes %>
+  </div>
+  <div class="field">
+    <%= f.label :source %><br />
+    <%= f.text_field :source %>
+  </div>
+  <div class="field">
+    <%= f.label :updated_at %><br />
+    <%= f.datetime_select :updated_at %>
+  </div>
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>
