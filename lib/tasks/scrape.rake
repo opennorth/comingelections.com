@@ -186,7 +186,6 @@ namespace :scrape do
         :division => e[:division],
         :notes => e[:notes],
         :source => e[:source],
-        :updated_at => Time.now,
         )
     end
   end
