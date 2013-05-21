@@ -27,14 +27,4 @@ ActiveRecord::Schema.define(:version => 20130521154841) do
     t.datetime "created_at",    :null => false
   end
 
-  create_table "users", :force => true do |t|
-    t.string   "provider"
-    t.string   "uid"
-    t.string   "name"
-    t.datetime "created_at",       :null => false
-    t.datetime "updated_at",       :null => false
-    t.datetime "oauth_expires_at"
-    t.string   "oauth_token"
-  end
-
 end

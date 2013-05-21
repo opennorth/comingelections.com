@@ -31,8 +31,8 @@ JURISDICTIONS = [
 end.join('|')
 
 namespace :scrape do
-  desc "TODO"
-  task :govt => :environment do
+  desc "Scrape Government Site"
+  task :govt => [:environment,] do
     source = 'http://www.psc-cfp.gc.ca/plac-acpl/leave-conge/ann2-eng.htm'
     doc = Nokogiri::HTML(open(source))
     doc.xpath('//tr').each do |tr|
@@ -61,7 +61,7 @@ namespace :scrape do
     end
   end
 
-  desc "TODO"
+  desc "Scrape Wikipedia page"
   task :wiki => :environment do
     def parse_wiki(href, year)
       elections = []
@@ -118,7 +118,7 @@ namespace :scrape do
     end
   end
 
-  desc "TODO"
+  desc "Scrape Municipal page"
   task :muni => :environment do
     source = 'http://www.icurr.org/research/municipal_facts/Elections/index.php'
     doc = Nokogiri::HTML(open(source))
@@ -155,7 +155,7 @@ namespace :scrape do
     end
   end
 
-  desc "TODO"
+  desc "Save records to CSV"
   task :csv => :environment do
     CSV.open('elections.csv', 'w') do |csv|
       csv << %w(Date Jurisdiction Type Scope Division Notes Source)
@@ -173,7 +173,7 @@ namespace :scrape do
     end
   end
 
-  desc "TODO"
+  desc "Save records to database"
   task :db => :environment do
     elections.each do |e|
       Election.create(
