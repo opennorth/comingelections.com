@@ -18,13 +18,13 @@ ActiveRecord::Schema.define(:version => 20130521154841) do
     t.date     "start_date"
     t.date     "end_date"
     t.string   "jurisdiction"
+    t.string   "division"
     t.string   "election_type"
     t.string   "scope"
-    t.string   "division"
     t.string   "notes"
     t.string   "source"
-    t.datetime "updated_at",    :null => false
     t.datetime "created_at",    :null => false
+    t.datetime "updated_at",    :null => false
   end
 
 end
