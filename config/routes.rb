@@ -1,4 +1,4 @@
-Comingelections::Application.routes.draw do
+ComingElections::Application.routes.draw do
   resources :elections
 
   root :to => "elections#index"
