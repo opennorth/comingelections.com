@@ -4,4 +4,4 @@
 
 require File.expand_path('../config/application', __FILE__)
 
-Comingelections::Application.load_tasks
+ComingElections::Application.load_tasks
