@@ -20,3 +20,7 @@ gem 'less-rails'
 gem 'json'
 gem 'nokogiri'
 gem 'pg'
+
+gem 'rails_admin'
+
+gem "devise"

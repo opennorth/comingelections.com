@@ -7,16 +7,12 @@ class Election < ActiveRecord::Base
   before_create :set_dates 
 
   def self.create_or_update(attributes)
-    election = Election.first_or_initialize(
-        :start_date => attributes['start_date'], 
-        :jurisdiction => attributes['jurisdiction'],
-        :election_type => attributes['election_type'])
-
-      election.scope = attributes['scope']
-      election.division = attributes['division']
-      election.notes = attributes['notes']
-      election.source = attributes['source']
-      election.save!
+    criteria = attributes.slice(:start_date,:jurisdiction,:election_type)   
+    election = Election.where(criteria).first_or_initialize
+    election.assign_attributes(attributes.slice(:year,:end_date,:scope,:division,:notes,:source))
+    p election
+    election.save!
+#      puts election.inspect
   end
 
   def self.to_csv 
