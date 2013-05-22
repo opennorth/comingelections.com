@@ -23,4 +23,5 @@ gem 'pg'
 
 gem 'rails_admin'
 
-gem "devise"
+gem 'devise'
+gem 'cancan'
