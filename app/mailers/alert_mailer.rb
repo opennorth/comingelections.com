@@ -8,7 +8,7 @@ class AlertMailer < ActionMailer::Base
   #
   def notify(elections)
     @elections = elections
-    mail(to: ENV['ALERT_EMAILS'], subject: "elctions this week").html
+    mail(to: ENV['ALERT_EMAILS'], subject: "elctions this week")
 
     
 
