@@ -50,8 +50,8 @@ namespace :scrape do
         type = 'municipal'
       end
 
-      elections.push({
-        date: Date.parse(tds[2].text),
+      Election.create_or_update({
+        start_date: Date.parse(tds[2].text),
         jurisdiction: tds[0].text,
         type: type,
         scope: scope,
@@ -95,8 +95,8 @@ namespace :scrape do
             puts "Warning: Unrecognized text #{text.inspect}"
           end
 
-          elections.push({
-            date: Date.parse("#{date} #{year}"),
+          Election.create_or_update({
+            start_date: Date.parse("#{date} #{year}"),
             jurisdiction: jurisdiction,
             type: type,
             scope: scope,
@@ -142,8 +142,8 @@ namespace :scrape do
             scope = texts[index - 1].gsub("\n", '').sub(/\AFor /, '').sub(/:\z/, '').downcase.strip
           end
 
-          elections.push({
-            date: Date.parse(text),
+          Election.create_or_update({
+            start_date: Date.parse(text),
             jurisdiction: jurisdiction,
             type: 'municipal',
             scope: scope,
@@ -155,23 +155,6 @@ namespace :scrape do
     end
   end
 
-  desc "Save records to CSV"
-  task :csv => :environment do
-    CSV.open('elections.csv', 'w') do |csv|
-      csv << %w(Date Jurisdiction Type Scope Division Notes Source)
-      elections.each do |election|
-        csv << [
-          election[:date],
-          election[:jurisdiction],
-          election[:type],
-          election[:scope],
-          election[:division],
-          election[:notes],
-          election[:source],
-        ]
-      end
-    end
-  end
 
   desc "Save records to database"
   task :db => :environment do

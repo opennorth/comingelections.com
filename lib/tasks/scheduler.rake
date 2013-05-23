@@ -5,7 +5,7 @@ namespace :scheduler do
       Rake::Task['scrape:govt'].invoke 
       Rake::Task['scrape:wiki'].invoke 
       Rake::Task['scrape:muni'].invoke 
-      Rake::Task['scrape:db'].invoke
+#      Rake::Task['scrape:db'].invoke
     end
   end
 end
