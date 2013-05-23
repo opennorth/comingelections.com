@@ -1,5 +1,5 @@
 class AlertMailer < ActionMailer::Base
-  default from: "alexi@opennorth.ca"
+  default from: "alerts@opennorth.ca"
 
   # Subject can be set in your I18n file at config/locales/en.yml
   # with the following lookup:
