@@ -64,8 +64,6 @@ namespace :scrape do
   desc "Scrape Wikipedia page"
   task :wiki => :environment do
     def parse_wiki(href, year)
-      p href
-
       source = "http://en.wikipedia.org#{href}"
       doc = Nokogiri::HTML(open(source))
       doc.xpath('//div[@id="mw-content-text"]/ul/li').each do |li|
@@ -75,9 +73,10 @@ namespace :scrape do
           date = date.gsub('[edit]','')
         end
 
-        if text && !text[/leadership|co-spokesperson/]
+        if text && !text[/leadership|co-spokesperson|referendum|plebiscite|school/i]
           type         = text.slice!(/by-election|general|municipal/)
           jurisdiction = text.slice!(/#{JURISDICTIONS}/) 
+
 
           text.slice!(/\(([^)]+)\)/)
           scope = $1
@@ -85,14 +84,18 @@ namespace :scrape do
           text.slice!(/in (\S+)/)
           division = $1
 
-          if jurisdiction.nil?
+          if jurisdiction.nil? || jurisdiction.strip.empty?
             text.slice!(/provincial/)
-            p "http://en.wikipedia.org#{li.at_css('a')[:href]}"
-            doc = Nokogiri::HTML(open("http://en.wikipedia.org#{li.at_css('a')[:href]}"))
-            if doc.at_css('.infobox th')
-              jurisdiction = doc.at_css('.infobox th').text.slice!(/#{JURISDICTIONS}/)
+            if li.at_css('a/@title[contains("does not exist")]')
+              puts li.text
+            else
+              doc = Nokogiri::HTML(open("http://en.wikipedia.org#{li.at_css('a')[:href]}"))
+              if doc.at_css('.infobox th')
+                jurisdiction = doc.at_css('.infobox th').text.slice!(/#{JURISDICTIONS}/) || 
+                doc.at_css('h1.firstHeading span').text.slice!(/#{JURISDICTIONS}/) 
+              end
+              division = text.strip.slice!(/.+/)
             end
-            division = text.strip.slice!(/.+/)
           end
 
           if jurisdiction == 'Federal'
@@ -100,13 +103,13 @@ namespace :scrape do
           end
 
           unless text.strip.empty?
-            puts "Warning: Unrecognized text #{text.inspect}"
+   #         puts "Warning: Unrecognized text #{text.inspect}"
           end
 
           Election.create_or_update({
             start_date: Date.parse("#{date} #{year}"),
             jurisdiction: jurisdiction,
-            type: type,
+            election_type: type,
             scope: scope,
             division: division,
             source: source,
@@ -114,11 +117,10 @@ namespace :scrape do
         end
       end
     end
-
     current_year = Date.today.year
     doc = Nokogiri::HTML(open('http://en.wikipedia.org/wiki/Canadian_electoral_calendar'))
     doc.xpath('//div[@id="mw-content-text"]/ul/li/a').each do |a|
-      if a.text.to_i >= 2005 #current_year
+      if a.text.to_i >= 2007 #current_year
         parse_wiki(a[:href], a.text)
       end
     end
