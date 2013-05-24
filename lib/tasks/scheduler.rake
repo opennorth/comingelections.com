@@ -9,7 +9,7 @@ namespace :scheduler do
     end
   end
   task :alert => :environment do 
-    if Time.now.wday == 0 then
+    if Time.now.wday == 5 then
       elections = Election.find(
         :all, :conditions => {
           :start_date => (
