@@ -73,54 +73,71 @@ namespace :scrape do
           date = date.gsub('[edit]','')
         end
 
-        if text && !text[/leadership|co-spokesperson|referendum|plebiscite|school/i]
-          type         = text.slice!(/by-election|general|municipal/)
-          jurisdiction = text.slice!(/#{JURISDICTIONS}/) 
-
-
-          text.slice!(/\(([^)]+)\)/)
-          scope = $1
-
-          text.slice!(/in (\S+)/)
-          division = $1
-
-          if jurisdiction.nil? || jurisdiction.strip.empty?
-            text.slice!(/provincial/)
-            if li.at_css('a/@title[contains("does not exist")]')
-              puts li.text
-            else
-              doc = Nokogiri::HTML(open("http://en.wikipedia.org#{li.at_css('a')[:href]}"))
-              if doc.at_css('.infobox th')
-                jurisdiction = doc.at_css('.infobox th').text.slice!(/#{JURISDICTIONS}/) || 
-                doc.at_css('h1.firstHeading span').text.slice!(/#{JURISDICTIONS}/) 
-              end
-              division = text.strip.slice!(/.+/)
-            end
-          end
-
-          if jurisdiction == 'Federal'
-            jurisdiction = 'Canada'
-          end
-
-          unless text.strip.empty?
-   #         puts "Warning: Unrecognized text #{text.inspect}"
-          end
-
-          Election.create_or_update({
-            start_date: Date.parse("#{date} #{year}"),
-            jurisdiction: jurisdiction,
-            election_type: type,
-            scope: scope,
-            division: division,
-            source: source,
-          })
+        if text 
+          parse_line(source, li, year, date, text)
         end
+        #if there is a nested list (one date and many elections)
+        if MONTHS.include?(date.split(' ')[0]) && !text
+          li.xpath('.//li').each do |nested_li|
+            date = date.split("\n")[0]
+            text = nested_li.text
+            parse_line(source, nested_li, year, date, text)
+          end
+        end
+
       end
     end
+
+    def parse_line(source, li, year, date, text)
+      if !text[/leadership|co-spokesperson|referendum|plebiscite|school/i]
+        type         = text.slice!(/by-election|general|municipal/)
+        jurisdiction = text.slice!(/#{JURISDICTIONS}/) 
+
+
+        text.slice!(/\(([^)]+)\)/)
+        scope = $1
+
+        text.slice!(/in (\S+)/)
+        division = $1
+
+        if jurisdiction.nil? || jurisdiction.strip.empty?
+          text.slice!(/provincial/)
+          if li.at_css('a/@title[contains("does not exist")]') || !li.at_css('a')
+            puts li.text
+          else
+            doc = Nokogiri::HTML(open("http://en.wikipedia.org#{li.at_css('a')[:href]}"))
+            if doc.at_css('.infobox th')
+              jurisdiction = doc.at_css('.infobox th').text.slice!(/#{JURISDICTIONS}/) || 
+              doc.at_css('h1.firstHeading span').text.slice!(/#{JURISDICTIONS}/) 
+            end
+            division = text.strip.slice!(/.+/)
+          end
+       end
+
+        if jurisdiction == 'Federal'
+          jurisdiction = 'Canada'
+        end
+
+        unless text.strip.empty?
+             puts "Warning: Unrecognized text #{text.inspect}"
+        end
+        Election.create_or_update({
+          start_date: Date.parse("#{date} #{year}"),
+          jurisdiction: jurisdiction,
+          election_type: type,
+          scope: scope,
+          division: division,
+          source: source,
+        })
+      end
+    end    
+    
+
+
     current_year = Date.today.year
     doc = Nokogiri::HTML(open('http://en.wikipedia.org/wiki/Canadian_electoral_calendar'))
     doc.xpath('//div[@id="mw-content-text"]/ul/li/a').each do |a|
-      if a.text.to_i >= 2007 #current_year
+      if a.text.to_i >= current_year
         parse_wiki(a[:href], a.text)
       end
     end
