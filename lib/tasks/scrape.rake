@@ -87,6 +87,7 @@ namespace :scrape do
 
           if jurisdiction.nil?
             text.slice!(/provincial/)
+            p "http://en.wikipedia.org#{li.at_css('a')[:href]}"
             doc = Nokogiri::HTML(open("http://en.wikipedia.org#{li.at_css('a')[:href]}"))
             if doc.at_css('.infobox th')
               jurisdiction = doc.at_css('.infobox th').text.slice!(/#{JURISDICTIONS}/)
