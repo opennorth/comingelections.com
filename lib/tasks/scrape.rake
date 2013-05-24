@@ -6,11 +6,11 @@ require 'csv'
 
 require 'nokogiri'
 
-elections = []
 
 MONTHS = %w(January February March April May June July August September October November December)
 JURISDICTIONS = [
   'Canada',
+  'Canadian',
   'Federal',
   'Alberta',
   'British Columbia',
@@ -64,15 +64,20 @@ namespace :scrape do
   desc "Scrape Wikipedia page"
   task :wiki => :environment do
     def parse_wiki(href, year)
-      elections = []
+      p href
 
       source = "http://en.wikipedia.org#{href}"
       doc = Nokogiri::HTML(open(source))
       doc.xpath('//div[@id="mw-content-text"]/ul/li').each do |li|
-        date, text = li.text.sub(/ elections?, #{year}/, '').split(' - ')
+        date, text = li.text.sub(/ elections?, #{year}/, '').split(/:| - /)
+        unless MONTHS.include?(date.split(' ')[0])
+          date = li.at_xpath('parent::*/preceding-sibling::h2[1]').text + date
+          date = date.gsub('[edit]','')
+        end
+
         if text && !text[/leadership|co-spokesperson/]
           type         = text.slice!(/by-election|general|municipal/)
-          jurisdiction = text.slice!(/#{JURISDICTIONS}/)
+          jurisdiction = text.slice!(/#{JURISDICTIONS}/) 
 
           text.slice!(/\(([^)]+)\)/)
           scope = $1
@@ -83,7 +88,9 @@ namespace :scrape do
           if jurisdiction.nil?
             text.slice!(/provincial/)
             doc = Nokogiri::HTML(open("http://en.wikipedia.org#{li.at_css('a')[:href]}"))
-            jurisdiction = doc.at_css('.infobox th').text.slice!(/#{JURISDICTIONS}/)
+            if doc.at_css('.infobox th')
+              jurisdiction = doc.at_css('.infobox th').text.slice!(/#{JURISDICTIONS}/)
+            end
             division = text.strip.slice!(/.+/)
           end
 
@@ -105,15 +112,13 @@ namespace :scrape do
           })
         end
       end
-
-      elections
     end
 
     current_year = Date.today.year
     doc = Nokogiri::HTML(open('http://en.wikipedia.org/wiki/Canadian_electoral_calendar'))
     doc.xpath('//div[@id="mw-content-text"]/ul/li/a').each do |a|
-      if a.text.to_i >= current_year
-        elections += parse_wiki(a[:href], a.text)
+      if a.text.to_i >= 2005 #current_year
+        parse_wiki(a[:href], a.text)
       end
     end
   end
@@ -152,24 +157,6 @@ namespace :scrape do
           })
         end
       end
-    end
-  end
-
-
-  desc "Save records to database"
-  task :db => :environment do
-    elections.each do |e|
-      Election.create_or_update(
-        :year => e[:date].year,
-        :start_date => e[:date],
-        :end_date => e[:date],
-        :jurisdiction => e[:jurisdiction],
-        :election_type => e[:type],
-        :scope => e[:scope],
-        :division => e[:division],
-        :notes => e[:notes],
-        :source => e[:source],
-        )
     end
   end
 

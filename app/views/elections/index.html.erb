@@ -32,7 +32,7 @@
         <td><%= election.scope %></td>
         <td><%= election.division %></td>
         <td><%= election.notes %></td>
-        <td><%= election.source %></td>
+        <td><%= link_to(election.source) %></td>
         <td><%= election.updated_at %></td>
       </tr>
     <% end %>
