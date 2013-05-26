@@ -2,10 +2,8 @@
 require 'csv'
 require 'date'
 require 'open-uri'
-require 'csv'
 
 require 'nokogiri'
-
 
 MONTHS = %w(January February March April May June July August September October November December)
 JURISDICTIONS = [
@@ -32,7 +30,7 @@ end.join('|')
 
 namespace :scrape do
   desc "Scrape Government Site"
-  task :govt => [:environment,] do
+  task :govt => :environment do
     source = 'http://www.psc-cfp.gc.ca/plac-acpl/leave-conge/ann2-eng.htm'
     doc = Nokogiri::HTML(open(source))
     doc.xpath('//tr').each do |tr|

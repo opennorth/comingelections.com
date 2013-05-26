@@ -1,4 +1,5 @@
 require 'date'
+
 namespace :scheduler do
   desc "run scrapers once per week"
   task :scrape do
@@ -8,6 +9,7 @@ namespace :scheduler do
       Rake::Task['scrape:muni'].invoke
     end
   end
+
   task :alert => :environment do
     if Time.now.wday == 0 then
       elections = Election.find(
