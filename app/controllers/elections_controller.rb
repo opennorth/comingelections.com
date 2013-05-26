@@ -12,13 +12,4 @@ class ElectionsController < ApplicationController
       }
     end
   end
-
-  def show
-    @election = Election.find(params[:id])
-
-    respond_to do |format|
-      format.html
-      format.json { render json: @election }
-    end
-  end
 end
