@@ -1,10 +1,7 @@
 require 'csv'
 
 class Election < ActiveRecord::Base
-
   attr_accessible :year, :start_date, :end_date, :jurisdiction, :division, :election_type, :scope, :notes, :source
-
-  attr_accessor :date
 
   before_save :set_year
   before_save :set_end_date
@@ -17,17 +14,12 @@ class Election < ActiveRecord::Base
   end
 
   def self.to_csv
-    @col_sep = ','
-    CSV.generate(col_sep: @col_sep, row_sep: "\r\n", headers: :first_row) do |csv|
-      csv << ["id","year","start_date","end_date","jurisdiction","division","election_type","scope","notes","source"]
-      self.all.each do |election|
-        begin
-          csv << election.attributes.values_at("id","year","start_date","end_date","jurisdiction","division","election_type","scope","notes","source")
-        rescue ArgumentError => e # non-UTF8 characters from spammers
-          logger.error "#{e.inspect}: #{row.inspect}"
-        end
+    CSV.generate(row_sep: "\r\n", headers: :first_row) do |csv|
+      csv << ['id', 'year', 'start_date', 'end_date', 'jurisdiction', 'division', 'election_type', 'scope', 'notes', 'source']
+      all.each do |election|
+        csv << election.attributes.values_at(:id, :year, :start_date, :end_date, :jurisdiction, :division, :election_type, :scope, :notes, :source)
       end
-    end.html_safe
+    end
   end
 
 private
