@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130522165304) do
+ActiveRecord::Schema.define(:version => 20130522143050) do
 
   create_table "elections", :force => true do |t|
     t.integer  "year"
