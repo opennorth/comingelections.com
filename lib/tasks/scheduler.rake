@@ -3,12 +3,12 @@ namespace :scheduler do
   desc "run scrapers once per week"
   task :scrape do
     if Time.now.wday == 3 then
-      Rake::Task['scrape:govt'].invoke 
-      Rake::Task['scrape:wiki'].invoke 
-      Rake::Task['scrape:muni'].invoke 
+      Rake::Task['scrape:govt'].invoke
+      Rake::Task['scrape:wiki'].invoke
+      Rake::Task['scrape:muni'].invoke
     end
   end
-  task :alert => :environment do 
+  task :alert => :environment do
     if Time.now.wday == 0 then
       elections = Election.find(
         :all, :conditions => {
