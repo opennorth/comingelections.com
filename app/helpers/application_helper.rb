@@ -2,8 +2,8 @@ module ApplicationHelper
   def info(election)
     info = ''
     info << election.attributes.values_at("jurisdiction", "election_type").join(' ')
-    info << ', '+election.attributes.values_at("division", "scope", "notes").join(', ') 
-    info = info.gsub(/ ,/,'')
+    info << ', '+election.division if election.division 
+    info
   end
 
 end
