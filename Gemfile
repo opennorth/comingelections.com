@@ -9,18 +9,24 @@ group :assets do
   gem 'uglifier', '>= 1.0.3'
 end
 
+group :production do
+  gem 'pg'
+end
+
 group :development, :test do
+  gem 'rspec-rails'
   gem 'sqlite3'
 end
 
+# Views
 gem 'jquery-rails'
 gem 'twitter-bootstrap-rails'
 gem 'less-rails'
 
+# Rake tasks
 gem 'json'
 gem 'nokogiri'
-gem 'pg'
 
+# Admin
 gem 'rails_admin'
-
 gem 'devise'

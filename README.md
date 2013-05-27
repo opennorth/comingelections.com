@@ -7,7 +7,15 @@ A simple service to alert you of upcoming elections in Canada.
     git clone git@github.com:opennorth/comingelections.git
     bundle
     bundle exec rake db:setup
+    bundle exec rake scheduler:scrape
     rails s
+
+## Deployment
+
+    heroku apps:create --addons scheduler:standard sendgrid:starter
+    heroku config:add SECRET_TOKEN=`bundle exec rake secret`
+    heroku config:add ALERT_EMAILS=a@example.com,b@example.org
+    git push heroku master
 
 ## Bugs? Questions?
 
