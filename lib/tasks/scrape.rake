@@ -47,11 +47,10 @@ namespace :scrape do
         scope = type
         type = 'municipal'
       end
-
       Election.create_or_update({
         start_date: Date.parse(tds[2].text),
         jurisdiction: tds[0].text,
-        type: type,
+        election_type: type,
         scope: scope,
         notes: notes,
         source: source,

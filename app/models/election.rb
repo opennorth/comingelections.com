@@ -3,14 +3,15 @@ require 'csv'
 class Election < ActiveRecord::Base
   attr_accessible :year, :start_date, :end_date, :jurisdiction, :division, :election_type, :scope, :notes, :source
 
-  before_save :set_year
-  before_save :set_end_date
+  before_validation :set_year, :set_end_date
+
+  validates :year, :start_date, :end_date, :jurisdiction, :election_type, :source, :presence => true
 
   def self.create_or_update(attributes)
     criteria = attributes.slice(:start_date, :jurisdiction, :election_type)
     election = Election.where(criteria).first_or_initialize
     election.assign_attributes(attributes.slice(:year, :end_date, :scope, :division, :notes, :source))
-    election.save!
+    election.save
   end
 
   def self.to_csv
