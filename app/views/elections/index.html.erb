@@ -8,12 +8,12 @@
       <th>Date</th>
       <th>Info</th>
       <th>Source</th>
-      <th>Updated on</th>
+      <th>Updated</th>
     </tr>
 
   <% @elections.each do |election| %>
     <tr>
-      <td><%= election.start_date.strftime(format = '%b %e %Y') %></td>
+      <td><%= election.start_date.strftime(format = '%b %e, %Y') %></td>
       <td><%= info(election) %></td>
       <td><%= link_to truncate(election.source), election.source %></td>
       <td><%= election.updated_at.strftime(format = '%b %e') %></td>

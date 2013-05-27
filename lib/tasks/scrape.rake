@@ -78,6 +78,7 @@ namespace :scrape do
         end
         #if there is a nested list (one date and many elections)
         if MONTHS.include?(date.split(' ')[0]) && !text
+          p year
           li.xpath('.//li').each do |nested_li|
             date = date.split("\n")[0]
             text = nested_li.text
@@ -138,7 +139,7 @@ namespace :scrape do
     doc = Nokogiri::HTML(open('http://en.wikipedia.org/wiki/Canadian_electoral_calendar'))
     doc.xpath('//div[@id="mw-content-text"]/ul/li/a').each do |a|
       if a.text.to_i >= current_year
-        parse_wiki(a[:href], a.text)
+        parse_wiki(a[:href], a.text) 
       end
     end
   end
