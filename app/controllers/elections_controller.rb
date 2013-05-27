@@ -4,11 +4,11 @@ class ElectionsController < ApplicationController
 
     respond_to do |format|
       format.html
-      format.json { render json: @elections }
+      format.json {
+        render json: @elections
+      }
       format.csv {
-        headers['Content-Type'] = 'text/csv; charset=utf-8; header=present'
-        headers['Content-Disposition'] = %(attachment; filename="upcoming_elections.csv")
-        send_data @elections.to_csv
+        send_data @elections.to_csv, filename: 'comingelections.csv', type: 'text/csv; charset=utf-8; header=present'
       }
     end
   end
