@@ -9,12 +9,10 @@ namespace :scheduler do
     end
   end
   task :alert => :environment do 
-    if Time.now.wday == 0 then
-      elections = Election.find(
-        :all, :conditions => {
-          :start_date => (
-            Time.now.to_date..(Time.now+(7*24*60*60)).to_date)})
-      unless elections.nil?
+    if Time.now.wday == 1 then
+      elections = Election.where(
+        :start_date => (Time.now.to_date..(Time.now+(7*24*60*60)).to_date))
+      unless elections.empty?
         AlertMailer.notify(elections).deliver
       end
     end
