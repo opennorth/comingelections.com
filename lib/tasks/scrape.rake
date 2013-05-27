@@ -98,7 +98,7 @@ namespace :scrape do
         scope = $1
 
         text.slice!(/in (\S+)/)
-        division = $1
+        division = $1 unless $1 == '.'
 
         if jurisdiction.nil? || jurisdiction.strip.empty?
           text.slice!(/provincial/)
