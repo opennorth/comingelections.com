@@ -1,7 +1,7 @@
 module ApplicationHelper
   WEEKDAYS = %w[sunday monday tuesday wednesday thursday friday saturday]
   MONTHS = %w[January February March April May June July August September October November December]
-  SUFFIXES = %w[st nd rd]
+  SUFFIXES = %w[st nd rd th]
 
 
   def info(election)
