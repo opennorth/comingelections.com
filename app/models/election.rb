@@ -5,7 +5,9 @@ class Election < ActiveRecord::Base
 
   before_validation :set_year, :set_end_date
 
-  validates :year, :start_date, :end_date, :jurisdiction, :election_type, :source, :presence => true
+  validates_presence_of :year, :start_date, :end_date, :jurisdiction, :election_type, :source
+  validates_presence_of :division, :if => :by_election?
+  validate :validate_dates
 
   def self.create_or_update(attributes)
     criteria = attributes.slice(:start_date, :jurisdiction, :election_type)
@@ -37,5 +39,13 @@ private
         self.end_date = start_date
       end
     end
+  end
+
+  def validate_dates
+    errors.add("End Date", "is invalid") if end_date < start_date
+  end
+
+  def by_election?
+      election_type == "by-election"
   end
 end

@@ -17,7 +17,7 @@ describe Election do
         Election.create_or_update(attributes)
       }.should change(Election, :count).by(1)
     end
-    
+
     it 'should set the year to match the start date' do
       Election.create_or_update(attributes)
       Election.last.year.should == attributes[:start_date].year
@@ -26,6 +26,19 @@ describe Election do
     it 'should set the end date to match the start date if the end date is empty' do
       Election.create_or_update(attributes)
       Election.last.end_date.should == attributes[:start_date]
+    end
+
+    it 'should not allow end_date to be before start_date' do
+      lambda{
+        Election.create_or_update(attributes.merge({:end_date => Date.parse("September 1, 2015")}))        
+      }.should_not change(Election, :count)
+    end
+
+    it 'should ensure division is present if type is by-election' do
+      attributes[:election_type] = 'by-election'
+      lambda{
+        Election.create_or_update(attributes)
+      }.should_not change(Election, :count)
     end
 
   end
