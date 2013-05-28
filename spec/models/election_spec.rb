@@ -1,76 +1,83 @@
 require 'spec_helper'
 
 describe Election do
+  let :attributes do
+    {
+      :start_date => Date.parse("October 1, 2015"),
+      :jurisdiction => "Ontario",
+      :election_type => "Provincial",
+      :scope => '',
+      :source => 'http://www.psc-cfp.gc.ca/plac-acpl/leave-conge/ann2-eng.htm',
+    }
+  end
   context 'when creating a record' do
-    let :election do
-      FactoryGirl.build(:election).attributes.with_indifferent_access
+    
+    it 'should create a new record' do
+      lambda{
+        Election.create_or_update(attributes)
+      }.should change(Election, :count).by(1)
     end
-
+    
     it 'should set the year to match the start date' do
-      Election.create_or_update(election)
-      Election.last.year.should == election[:start_date].year
+      Election.create_or_update(attributes)
+      Election.last.year.should == attributes[:start_date].year
     end
 
     it 'should set the end date to match the start date if the end date is empty' do
-      Election.create_or_update(election)
-      Election.last.end_date.should == election[:start_date]
+      Election.create_or_update(attributes)
+      Election.last.end_date.should == attributes[:start_date]
     end
 
   end
 
   context 'when updating a record' do
     
-    let :election do 
-      FactoryGirl.build(:election).attributes.with_indifferent_access
-    end
-
-    let :with_same_end_date do
-      FactoryGirl.build(:with_same_end_date).attributes.with_indifferent_access
-    end
-
-    let :with_different_end_date do
-      FactoryGirl.build(:with_different_end_date).attributes.with_indifferent_access
-    end
-
-    let :with_extra_info do
-      FactoryGirl.build(:with_extra_info).attributes.with_indifferent_access
+    let :extra_info do 
+      {
+        :scope => 'sample scope',
+        :notes => 'here is some sample info'
+      }
     end
 
     before do 
-      Election.create_or_update(election)
+      Election.create_or_update(attributes)
+    end
+
+    it 'should not create a new record' do 
+      lambda{
+        Election.create_or_update(attributes.merge(extra_info))
+      }.should_not change(Election, :count)
     end
 
     it 'should set the year to match the start date' do
-      Election.create_or_update(with_extra_info)
+      Election.create_or_update(attributes.merge(extra_info))
       revised = Election.order("updated_at").last
-      revised.year.should == with_extra_info[:start_date].year
+      revised.year.should == attributes[:start_date].year
     end
 
     it 'should set the end date to match the start date if the end date is empty' do
-      Election.create_or_update(with_extra_info)
+      Election.create_or_update(attributes)
       revised = Election.order("updated_at").last
-      revised.end_date.should == election[:start_date]
+      revised.end_date.should == attributes[:start_date]
     end
 
     it 'should set the end date to match the start date if the end date was equal to the start date' do
-      Election.create_or_update(with_same_end_date)
+      Election.create_or_update(attributes.merge({:end_date => Date.parse("October 1, 2015")}))
       revised = Election.order("updated_at").last
-      revised.end_date.should == election[:start_date]
+      revised.end_date.should == attributes[:start_date]
     end
 
     it 'should not set the end date to match the start date if the end date was different from the start date' do
-      Election.create_or_update(with_different_end_date)
+      Election.create_or_update(attributes.merge({:end_date => Date.parse("October 3, 2015")}))
       revised = Election.order("updated_at").last
-      revised.end_date.should == with_different_end_date[:end_date]
+      revised.end_date.should == Date.parse("October 3, 2015")
     end
 
     it 'should update fields that are different' do
-      Election.create_or_update(with_extra_info)
+      Election.create_or_update(attributes.merge(extra_info))
       revised = Election.order("updated_at").last
-      p with_extra_info
-      p Election.all
-      revised.scope.should == with_extra_info[:scope]
-      revised.notes.should == with_extra_info[:notes]
+      revised.scope.should == extra_info[:scope]
+      revised.notes.should == extra_info[:notes]
     end
 
   end
