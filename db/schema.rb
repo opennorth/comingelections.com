@@ -11,7 +11,18 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130522143050) do
+ActiveRecord::Schema.define(:version => 20130528180233) do
+
+  create_table "election_schedules", :force => true do |t|
+    t.integer  "rank"
+    t.integer  "weekday"
+    t.integer  "term_length"
+    t.datetime "created_at",    :null => false
+    t.datetime "updated_at",    :null => false
+    t.integer  "month"
+    t.datetime "last_election"
+    t.string   "jurisdiction"
+  end
 
   create_table "elections", :force => true do |t|
     t.integer  "year"
@@ -46,8 +57,14 @@ ActiveRecord::Schema.define(:version => 20130522143050) do
     t.string   "reset_password_token"
     t.datetime "reset_password_sent_at"
     t.datetime "remember_created_at"
+    t.integer  "sign_in_count",          :default => 0
+    t.datetime "current_sign_in_at"
+    t.datetime "last_sign_in_at"
+    t.string   "current_sign_in_ip"
+    t.string   "last_sign_in_ip"
     t.datetime "created_at",                             :null => false
     t.datetime "updated_at",                             :null => false
+    t.string   "role"
   end
 
   add_index "users", ["email"], :name => "index_users_on_email", :unique => true
