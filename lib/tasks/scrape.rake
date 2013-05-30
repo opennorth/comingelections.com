@@ -29,8 +29,8 @@ JURISDICTIONS = [
 end.join('|')
 
 namespace :scrape do
-  desc "Scrape Government Site"
-  task :govt => :environment do
+  desc "Scrape the Public Service Commission of Canada"
+  task public_service_commission: :environment do
     source = 'http://www.psc-cfp.gc.ca/plac-acpl/leave-conge/ann2-eng.htm'
     doc = Nokogiri::HTML(open(source))
     doc.xpath('//tr').each do |tr|
@@ -58,8 +58,8 @@ namespace :scrape do
     end
   end
 
-  desc "Scrape Wikipedia page"
-  task :wiki => :environment do
+  desc "Scrape Wikipedia"
+  task :wikipedia => :environment do
     def parse_wiki(href, year)
       source = "http://en.wikipedia.org#{href}"
       doc = Nokogiri::HTML(open(source))
@@ -70,7 +70,7 @@ namespace :scrape do
           date = date.gsub('[edit]','')
         end
 
-        if text 
+        if text
           parse_line(source, li, year, date, text)
         end
         #if there is a nested list (one date and many elections)
@@ -89,7 +89,7 @@ namespace :scrape do
     def parse_line(source, li, year, date, text)
       if !text[/leadership|co-spokesperson|referendum|plebiscite|school/i]
         type         = text.slice!(/by-election|general|municipal/)
-        jurisdiction = text.slice!(/#{JURISDICTIONS}/) 
+        jurisdiction = text.slice!(/#{JURISDICTIONS}/)
 
 
         text.slice!(/\(([^)]+)\)/)
@@ -105,8 +105,8 @@ namespace :scrape do
           else
             doc = Nokogiri::HTML(open("http://en.wikipedia.org#{li.at_css('a')[:href]}"))
             if doc.at_css('.infobox th')
-              jurisdiction = doc.at_css('.infobox th').text.slice!(/#{JURISDICTIONS}/) || 
-              doc.at_css('h1.firstHeading span').text.slice!(/#{JURISDICTIONS}/) 
+              jurisdiction = doc.at_css('.infobox th').text.slice!(/#{JURISDICTIONS}/) ||
+              doc.at_css('h1.firstHeading span').text.slice!(/#{JURISDICTIONS}/)
             end
             division = text.strip.slice!(/.+/)
           end
@@ -128,21 +128,19 @@ namespace :scrape do
           source: source,
         })
       end
-    end    
-    
-
+    end
 
     current_year = Date.today.year
     doc = Nokogiri::HTML(open('http://en.wikipedia.org/wiki/Canadian_electoral_calendar'))
     doc.xpath('//div[@id="mw-content-text"]/ul/li/a').each do |a|
       if a.text.to_i >= current_year
-        parse_wiki(a[:href], a.text) 
+        parse_wiki(a[:href], a.text)
       end
     end
   end
 
-  desc "Scrape Municipal page"
-  task :muni => :environment do
+  desc "Scrape Muniscope"
+  task :muniscope => :environment do
     source = 'http://www.icurr.org/research/municipal_facts/Elections/index.php'
     doc = Nokogiri::HTML(open(source))
     doc.xpath('//table/tbody//tr').each do |tr|
