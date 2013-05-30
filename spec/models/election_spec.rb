@@ -10,8 +10,8 @@ describe Election do
       :source => 'http://www.psc-cfp.gc.ca/plac-acpl/leave-conge/ann2-eng.htm',
     }
   end
+
   context 'when creating a record' do
-    
     it 'should create a new record' do
       lambda{
         Election.create_or_update(attributes)
@@ -30,7 +30,7 @@ describe Election do
 
     it 'should not allow end_date to be before start_date' do
       lambda{
-        Election.create_or_update(attributes.merge({:end_date => Date.parse("September 1, 2015")}))        
+        Election.create_or_update(attributes.merge({:end_date => Date.parse("September 1, 2015")}))
       }.should_not change(Election, :count)
     end
 
@@ -44,19 +44,18 @@ describe Election do
   end
 
   context 'when updating a record' do
-    
-    let :extra_info do 
+    let :extra_info do
       {
         :scope => 'sample scope',
         :notes => 'here is some sample info'
       }
     end
 
-    before do 
+    before do
       Election.create_or_update(attributes)
     end
 
-    it 'should not create a new record' do 
+    it 'should not create a new record' do
       lambda{
         Election.create_or_update(attributes.merge(extra_info))
       }.should_not change(Election, :count)
