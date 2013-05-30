@@ -18,8 +18,12 @@ ActiveRecord::Schema.define(:version => 20130528153611) do
     t.integer  "weekday"
     t.integer  "month"
     t.integer  "term_length"
-    t.date     "last_election"
+    t.integer  "start_year"
     t.string   "jurisdiction"
+    t.string   "election_type"
+    t.string   "scope"
+    t.string   "notes"
+    t.string   "source"
     t.datetime "created_at",    :null => false
     t.datetime "updated_at",    :null => false
   end
@@ -29,8 +33,8 @@ ActiveRecord::Schema.define(:version => 20130528153611) do
     t.date     "start_date"
     t.date     "end_date"
     t.string   "jurisdiction"
-    t.string   "division"
     t.string   "election_type"
+    t.string   "division"
     t.string   "scope"
     t.string   "notes"
     t.string   "source"

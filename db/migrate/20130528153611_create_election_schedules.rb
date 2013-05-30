@@ -5,8 +5,12 @@ class CreateElectionSchedules < ActiveRecord::Migration
       t.integer :weekday
       t.integer :month
       t.integer :term_length
-      t.date    :last_election
-      t.string  :jurisdiction
+      t.integer :start_year
+      t.string :jurisdiction
+      t.string :election_type
+      t.string :scope
+      t.string :notes
+      t.string :source
 
       t.timestamps
     end
