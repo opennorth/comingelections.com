@@ -3,8 +3,10 @@ class CreateElectionSchedules < ActiveRecord::Migration
     create_table :election_schedules do |t|
       t.integer :rank
       t.integer :weekday
-      t.integer :mont
+      t.integer :month
       t.integer :term_length
+      t.date    :last_election
+      t.string  :jurisdiction
 
       t.timestamps
     end
