@@ -3,6 +3,7 @@ require 'csv'
 
 class Election < ActiveRecord::Base
   attr_accessible :year, :start_date, :end_date, :jurisdiction, :election_type, :division, :scope, :notes, :source
+  attr_accessor :tentative
 
   before_validation :set_year, :set_end_date
 
@@ -35,6 +36,10 @@ class Election < ActiveRecord::Base
     end
   end
 
+  def by_election?
+    election_type == "by-election"
+  end
+
 private
 
   def set_year
@@ -55,9 +60,5 @@ private
     if end_date < start_date
       errors.add(:end_date, 'must be after start date')
     end
-  end
-
-  def by_election?
-    election_type == "by-election"
   end
 end

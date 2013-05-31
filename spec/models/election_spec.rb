@@ -32,6 +32,16 @@ describe Election do
     end
   end
 
+  describe '#by_election?' do
+    it 'should return true if it is a by-election' do
+      Election.create(attributes.merge(election_type: 'by-election')).by_election?.should == true
+    end
+
+    it 'should return false if it is not a by-election' do
+      Election.create(attributes.merge(election_type: 'general')).by_election?.should == false
+    end
+  end
+
   describe 'callbacks' do
     let :election do
       Election.create(attributes)
