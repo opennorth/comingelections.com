@@ -10,6 +10,16 @@ describe Election do
     }
   end
 
+  describe '#within' do
+    it 'should return the elections within the range' do
+      a = Election.create(attributes.merge(start_date: Date.new(2050, 1, 1)))
+      b = Election.create(attributes.merge(start_date: Date.new(2000, 1, 1)))
+      c = Election.create(attributes)
+      d = Election.create(attributes)
+      Election.within(Date.new(2010)..Date.new(2030)).should == [c, d]
+    end
+  end
+
   describe '#create_or_update' do
     it 'should create a new record' do
       expect{

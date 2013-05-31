@@ -13,9 +13,9 @@ class Election < ActiveRecord::Base
   validates_inclusion_of :election_type, in: ComingElections::ELECTION_TYPES
   validate :end_date_must_be_after_start_date
 
-  # @param [Integer] seconds seconds
-  def self.within_next(seconds)
-    where(start_date: Date.today..seconds.from_now.to_date)
+  # @param [Range] range a range of dates
+  def self.within(range)
+    where(start_date: range)
   end
 
   # @param [Hash] attributes attributes
