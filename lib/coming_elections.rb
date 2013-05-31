@@ -16,6 +16,12 @@ module ComingElections
     'Northwest Territories',
     'Nunavut',
     'Yukon',
+    # Municipalities
+    'Bedford',
+    'Bromont',
+    'Cowansville',
+    'Magog',
+    'Vancouver',
   ]
 
   ELECTION_TYPES = %w(general by-election municipal)

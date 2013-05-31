@@ -6,25 +6,7 @@ require 'open-uri'
 require 'nokogiri'
 
 MONTHS = %w(January February March April May June July August September October November December)
-JURISDICTIONS = [
-  'Canada',
-  'Canadian',
-  'Federal',
-  'Alberta',
-  'British Columbia',
-  'Manitoba',
-  'New Brunswick',
-  'Newfoundland and Labrador',
-  'Northwest Territories',
-  'Nova Scotia',
-  'Nunavut',
-  'Ontario',
-  'Prince Edward Island',
-  'Saskatchewan',
-  'Quebec',
-  'Québec',
-  'Yukon',
-].map do |jurisdiction|
+JURISDICTIONS = ComingElections::JURISDICTIONS.map do |jurisdiction|
   Regexp.escape(jurisdiction)
 end.join('|')
 
@@ -33,10 +15,13 @@ namespace :scrape do
   task public_service_commission: :environment do
     source = 'http://www.psc-cfp.gc.ca/plac-acpl/leave-conge/ann2-eng.htm'
     doc = Nokogiri::HTML(open(source))
+
     doc.xpath('//tr').each do |tr|
       next if tr.at_css('th')
+
       tds = tr.css('td')
       tds[1].css('br').each{|br| br.replace(' ')}
+
       type, notes = tds[1].text.downcase.match(/\A([^(]+?)(?: \(([^)]+)\))?\z/)[1..2]
       if %w(federal provincial territorial).include?(type)
         type = 'general'
@@ -47,6 +32,7 @@ namespace :scrape do
         scope = type
         type = 'municipal'
       end
+
       Election.create_or_update({
         start_date: Date.parse(tds[2].text),
         jurisdiction: tds[0].text,
@@ -73,24 +59,29 @@ namespace :scrape do
         if text
           parse_line(source, li, year, date, text)
         end
+
         #if there is a nested list (one date and many elections)
         if MONTHS.include?(date.split(' ')[0]) && !text
-          p year
           li.xpath('.//li').each do |nested_li|
             date = date.split("\n")[0]
             text = nested_li.text
             parse_line(source, nested_li, year, date, text)
           end
         end
-
       end
     end
 
     def parse_line(source, li, year, date, text)
       if !text[/leadership|co-spokesperson|referendum|plebiscite|school/i]
-        type         = text.slice!(/by-election|general|municipal/)
-        jurisdiction = text.slice!(/#{JURISDICTIONS}/)
+        # @todo Don't skip.
+        return if text[/By-elections to the 38th Canadian Parliament/]
 
+        type         = text.slice!(/\b(?:by-election|general|municipal|provincial)\b/)
+        jurisdiction = text.slice!(/#{JURISDICTIONS}|Federal/)
+
+        if type == 'provincial'
+          type = 'general'
+        end
 
         text.slice!(/\(([^)]+)\)/)
         scope = $1
@@ -99,7 +90,6 @@ namespace :scrape do
         division = $1 unless $1 == '.'
 
         if jurisdiction.nil? || jurisdiction.strip.empty?
-          text.slice!(/provincial/)
           if li.at_css('a/@title[contains("does not exist")]') || !li.at_css('a')
             puts li.text
           else
@@ -114,10 +104,11 @@ namespace :scrape do
 
         if jurisdiction == 'Federal'
           jurisdiction = 'Canada'
+          type ||= 'general'
         end
 
         unless text.strip.empty?
-             puts "Warning: Unrecognized text #{text.inspect}"
+          puts "Warning: Unrecognized text #{text.inspect}"
         end
         Election.create_or_update({
           start_date: Date.parse("#{date} #{year}"),
@@ -133,16 +124,18 @@ namespace :scrape do
     current_year = Date.today.year
     doc = Nokogiri::HTML(open('http://en.wikipedia.org/wiki/Canadian_electoral_calendar'))
     doc.xpath('//div[@id="mw-content-text"]/ul/li/a').each do |a|
-      if a.text.to_i >= current_year
+      if a.text[/\A\d{4}\z/] && a[:class] != 'new'
         parse_wiki(a[:href], a.text)
       end
     end
   end
 
+  # @todo Compare to schedules. If identical, remove this Rake task.
   desc "Scrape Muniscope"
   task :muniscope => :environment do
     source = 'http://www.icurr.org/research/municipal_facts/Elections/index.php'
     doc = Nokogiri::HTML(open(source))
+
     doc.xpath('//table/tbody//tr').each do |tr|
       texts = tr.at_xpath('.//td[@class="rcell"]').to_s.split('<br>').map do |html|
         Nokogiri::HTML(html).text.strip
