@@ -6,8 +6,8 @@ class CreateElections < ActiveRecord::Migration
       t.date :start_date
       t.date :end_date
       t.string :jurisdiction
-      t.string :division
       t.string :election_type
+      t.string :division
       t.string :scope
       t.string :notes
       t.string :source

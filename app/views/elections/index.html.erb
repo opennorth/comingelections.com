@@ -1,32 +1,45 @@
-
 <div class="span9">
-<h1>Upcoming Elections
-<%= link_to "CSV", elections_path(format: "csv"), :class => "btn btn-success pull-right"%>
-</h1>
-  <table class="table table-striped">
-    <tr>
-      <th>Date</th>
-      <th>Info</th>
-      <th>Source</th>
-      <th>Updated</th>
-    </tr>
+  <h1>
+    Upcoming Elections
+    <%= link_to "CSV", elections_path(format: "csv"), class: "btn btn-success pull-right" %>
+  </h1>
 
-  <% @elections.each do |election| %>
-    <tr>
-      <td><%= election.start_date.strftime(format = '%b %e, %Y') %></td>
-      <td>
-        <%= info(election) %>
-        <p><%= election.scope %></p>
-        <p><%= election.notes %></p>
-      </td>
-      <td><%= link_to truncate(election.source), election.source %></td>
-      <td><%= election.updated_at.strftime(format = '%b %e') %></td>
-    </tr>
-  <% end %>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Details</th>
+        <th>Source</th>
+        <th>Updated</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @elections.each do |election| %>
+        <tr>
+          <td>
+            <%=l election.start_date %>
+            <% if election.scheduled %>
+            <span class="label">Scheduled</span>
+            <% end %>
+          </td>
+          <td>
+            <p><%= election.jurisdiction %> <%= election.election_type %><% if election.division? %>, <%= election.division %><% end %></p>
+            <% if election.scope? %>
+              <p><%= election.scope %></p>
+            <% end %>
+            <% if election.notes? %>
+              <p><%= election.notes %></p>
+            <% end %>
+          </td>
+          <td><%= link_to truncate(election.source), election.source %></td>
+          <td><%=l election.updated_at.to_date, format: :short %></td>
+        </tr>
+      <% end %>
+    </tbody>
   </table>
 </div>
-<div class = "span3">
+
+<div class="span3">
   <a class="twitter-timeline" href="https://twitter.com/comingelections/elections" data-widget-id="337208167597473792">Tweets from @comingelections/elections</a>
   <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
 </div>
-

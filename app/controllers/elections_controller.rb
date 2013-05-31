@@ -1,6 +1,7 @@
 class ElectionsController < ApplicationController
   def index
-    @elections = Election.order(:start_date)
+    range = Date.today..1.year.from_now.to_date
+    @elections = Election.all + ElectionSchedule.within(range)
 
     respond_to do |format|
       format.html
