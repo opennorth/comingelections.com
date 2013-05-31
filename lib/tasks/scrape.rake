@@ -166,7 +166,7 @@ namespace :scrape do
           Election.create_or_update({
             start_date: Date.parse(text),
             jurisdiction: jurisdiction,
-            type: 'municipal',
+            election_type: 'municipal',
             scope: scope,
             notes: notes,
             source: source,
