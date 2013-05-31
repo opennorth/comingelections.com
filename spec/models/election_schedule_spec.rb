@@ -29,6 +29,7 @@ describe ElectionSchedule do
       election.scope.should == 'foo'
       election.notes.should == 'bar'
       election.source.should == 'http://example.com/'
+      election.tentative.should == true
       election.valid?.should == true
     end
   end

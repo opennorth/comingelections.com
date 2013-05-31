@@ -16,7 +16,12 @@
     <tbody>
       <% @elections.each do |election| %>
         <tr>
-          <td><%=l election.start_date %></td>
+          <td>
+            <%=l election.start_date %>
+            <% if election.scheduled %>
+            <span class="label">Scheduled</span>
+            <% end %>
+          </td>
           <td>
             <p><%= election.jurisdiction %> <%= election.election_type %><% if election.division? %>, <%= election.division %><% end %></p>
             <% if election.scope? %>

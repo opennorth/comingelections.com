@@ -27,7 +27,10 @@ class ElectionSchedule < ActiveRecord::Base
   # @param [Date] date the start date
   # @return [Election] the next election
   def next_election(date = Date.today)
-    Election.new(attributes.slice('jurisdiction', 'election_type', 'scope', 'notes', 'source').merge(start_date: next_election_date(date)))
+    Election.new(attributes.slice('jurisdiction', 'election_type', 'scope', 'notes', 'source').merge({
+      start_date: next_election_date(date),
+      scheduled: true,
+    ))
   end
 
   # @param [Date] date the start date
