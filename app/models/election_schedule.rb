@@ -1,38 +1,58 @@
 class ElectionSchedule < ActiveRecord::Base
-  attr_accessible :month, :rank, :term_length, :weekday, :last_election, :jurisdiction
+  attr_accessible :rank, :weekday, :month, :term_length, :start_year, :jurisdiction, :election_type, :scope, :notes, :source
 
-  validates_presence_of :month, :rank, :term_length, :weekday, :last_election
-  validate :valid_rank
+  validates_presence_of :rank, :weekday, :month, :term_length, :start_year, :jurisdiction, :election_type, :source
+  validates_inclusion_of :rank, in: -4..3
+  validates_inclusion_of :weekday, in: 0..6
+  validates_inclusion_of :month, in: 1..12
+  validates_inclusion_of :jurisdiction, in: ComingElections::JURISDICTIONS
+  validates_inclusion_of :election_type, in: ComingElections::ELECTION_TYPES
+  validates_numericality_of :term_length, only_integer: true, greater_than: 0
+  validates_numericality_of :start_year, only_integer: true
 
-  SOURCE = 'http://en.wikipedia.org/wiki/Fixed_election_dates_in_Canada'
-
-  def elections_until (year)
-    elections = []
-    previous = last_election
-    num = (year-last_election.year)/term_length
-    num.times do
-      upcoming = next_election(previous)
-      elections.push(upcoming)
-      previous = upcoming
-    end
-    elections
+  # @param [Range] range a range of dates
+  def self.within(range)
+    all.map do |election_schedule|
+      election = election_schedule.next_election(range.min)
+      if election.valid? # fires before_validation callbacks
+        if range.cover?(election.start_date) && range.cover?(election.end_date)
+          election
+        end
+      else
+        raise ActiveRecord::RecordInvalid.new(election)
+      end
+    end.compact
   end
 
-  def next_election (previous = self.last_election)
-    year = previous.year + term_length
-    if rank > 0
-      date = Date.parse("#{year}-#{month}-1")
-      date = date + (7-(date.wday-weekday)%7).days
-      date = date + (rank-1).weeks
+  # @param [Date] date the start date
+  # @return [Election] the next election
+  def next_election(date = Date.today)
+    Election.new(attributes.slice('jurisdiction', 'election_type', 'scope', 'notes', 'source').merge(start_date: next_election_date(date)))
+  end
+
+  # @param [Date] date the start date
+  # @return [Date] the next election date
+  def next_election_date(date = Date.today)
+    year = this_or_next_election_year(date)
+
+    if rank >= 0
+      next_date = Date.new(year, month)
     else
-      date = Date.parse("#{year}-#{month+1}-1")
-      date = date + (7-(date.wday-weekday)%7).days
-      date = date + (rank).weeks
+      next_date = Date.new(year, month + 1)
     end
+
+    next_date = next_date + next_date.days_to_week_start(weekday) + rank.weeks
+
+    if next_date < date
+      next_date = next_election_date(Date.new(year + 1))
+    end
+
+    next_date
   end
 
 private
-  def valid_rank  
-    errors.add("Rank","can't be 0") if rank == 0
+
+  def this_or_next_election_year(date = Date.today)
+    date.year + date.years_to_term_start(start_year, term_length)
   end
 end
