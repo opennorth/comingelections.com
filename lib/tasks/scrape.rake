@@ -75,7 +75,6 @@ namespace :scrape do
         end
         #if there is a nested list (one date and many elections)
         if MONTHS.include?(date.split(' ')[0]) && !text
-          p year
           li.xpath('.//li').each do |nested_li|
             date = date.split("\n")[0]
             text = nested_li.text
@@ -101,7 +100,7 @@ namespace :scrape do
         if jurisdiction.nil? || jurisdiction.strip.empty?
           text.slice!(/provincial/)
           if li.at_css('a/@title[contains("does not exist")]') || !li.at_css('a')
-            puts li.text
+            puts "Warning: not enough info for #{li.text}"
           else
             doc = Nokogiri::HTML(open("http://en.wikipedia.org#{li.at_css('a')[:href]}"))
             if doc.at_css('.infobox th')
@@ -115,9 +114,10 @@ namespace :scrape do
         if jurisdiction == 'Federal'
           jurisdiction = 'Canada'
         end
-
-        unless text.strip.empty?
-             puts "Warning: Unrecognized text #{text.inspect}"
+        unless text.strip.empty? 
+          if jurisdiction.nil? || type.nil?
+            puts "Warning: Unrecognized text #{text.inspect}"
+          end
         end
         Election.create_or_update({
           start_date: Date.parse("#{date} #{year}"),
@@ -131,11 +131,10 @@ namespace :scrape do
     end    
     
 
-
     current_year = Date.today.year
     doc = Nokogiri::HTML(open('http://en.wikipedia.org/wiki/Canadian_electoral_calendar'))
     doc.xpath('//div[@id="mw-content-text"]/ul/li/a').each do |a|
-      if a.text.to_i >= current_year
+      if a.text.to_i >= 2009
         parse_wiki(a[:href], a.text) 
       end
     end

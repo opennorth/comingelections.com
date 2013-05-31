@@ -10,6 +10,9 @@ class Election < ActiveRecord::Base
   validate :validate_dates
 
   def self.create_or_update(attributes)
+    #p '--------------------------'
+    #p attributes
+    #p '--------------------------'
     criteria = attributes.slice(:start_date, :jurisdiction, :election_type)
     election = Election.where(criteria).first_or_initialize
     election.assign_attributes(attributes.slice(:year, :end_date, :scope, :division, :notes, :source))
