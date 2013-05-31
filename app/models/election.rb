@@ -2,7 +2,7 @@
 require 'csv'
 
 class Election < ActiveRecord::Base
-  attr_accessible :year, :start_date, :end_date, :jurisdiction, :election_type, :division, :scope, :notes, :source
+  attr_accessible :year, :start_date, :end_date, :jurisdiction, :election_type, :division, :scope, :notes, :source, :scheduled
   attr_accessor :scheduled
 
   before_validation :set_year, :set_end_date
