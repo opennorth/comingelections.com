@@ -8,25 +8,8 @@ class Election < ActiveRecord::Base
 
   validates_presence_of :year, :start_date, :end_date, :jurisdiction, :election_type, :source
   validates_presence_of :division, if: :by_election?
-  validates_inclusion_of :jurisdiction, in: [
-    'Canada',
-    # Provinces
-    'Alberta',
-    'British Columbia',
-    'Manitoba',
-    'New Brunswick',
-    'Newfoundland and Labrador',
-    'Nova Scotia',
-    'Ontario',
-    'Prince Edward Island',
-    'Quebec',
-    'Saskatchewan',
-    # Territories
-    'Northwest Territories',
-    'Nunavut',
-    'Yukon',
-  ]
-  validates_inclusion_of :election_type, in: %w(general by-election municipal)
+  validates_inclusion_of :jurisdiction, in: ComingElections::JURISDICTIONS
+  validates_inclusion_of :election_type, in: ComingElections::ELECTION_TYPES
   validate :end_date_must_be_after_start_date
 
   # @param [Integer] seconds seconds

@@ -62,3 +62,4 @@ module ComingElections
 end
 
 require 'date_extensions'
+require 'coming_elections'
