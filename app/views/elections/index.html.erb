@@ -17,7 +17,7 @@
       <% @elections.each do |election| %>
         <tr>
           <td>
-            <%=l election.start_date %>
+            <%= election.start_date %>
             <% if election.scheduled %>
             <span class="label">Scheduled</span>
             <% end %>

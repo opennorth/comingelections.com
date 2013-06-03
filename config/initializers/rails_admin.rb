@@ -50,11 +50,36 @@ RailsAdmin.config do |config|
   # Now you probably need to tour the wiki a bit: https://github.com/sferik/rails_admin/wiki
   # Anyway, here is how RailsAdmin saw your application's models when you ran the initializer:
 
-
+  ### Election_schedules ###
+  config.model 'ElectionSchedule' do 
+    list do
+      field :jurisdiction
+      field :rank
+      field :weekday
+      field :month
+      field :term_length
+      field :start_year
+      field :source
+      field :scope
+      field :notes
+      field :election_type
+    end
+  end
 
   ###  Election  ###
 
-  # config.model 'Election' do
+   config.model 'Election' do
+    list do
+      field :jurisdiction
+      field :election_type
+      field :start_date
+      field :division
+      field :scope
+      field :notes
+      field :source
+      field :scheduled
+    end
+  end
 
   #   # You can copy this to a 'rails_admin do ... end' block inside your election.rb model definition
 
