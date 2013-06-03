@@ -9,7 +9,7 @@ class ElectionsController < ApplicationController
         render json: @elections
       }
       format.csv {
-        send_data @elections.to_csv, filename: 'comingelections.csv', type: 'text/csv; charset=utf-8; header=present'
+        send_data Election.to_csv(@elections), filename: 'comingelections.csv', type: 'text/csv; charset=utf-8; header=present'
       }
     end
   end

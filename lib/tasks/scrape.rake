@@ -86,9 +86,11 @@ namespace :scrape do
         text.slice!(/\(([^)]+)\)/)
         scope = $1
 
-        p text if !text.empty? && type == 'by-election'
+        text.gsub!(/provincial|municipal|ward|in|,$/i,'\1')
+#        p text if !text.empty? && type == 'by-election'
         text.slice!(/(([A-Z](\S+) ?)+)/)
         division = $1 unless $1 == '.'
+
 
         if jurisdiction.nil? || jurisdiction.strip.empty?
           if li.at_css('a/@title[contains("does not exist")]') || !li.at_css('a')
@@ -99,7 +101,10 @@ namespace :scrape do
               jurisdiction = doc.at_css('.infobox th').text.slice!(/#{JURISDICTIONS}/) ||
               doc.at_css('h1.firstHeading span').text.slice!(/#{JURISDICTIONS}/)
             end
-            division = text.strip.slice!(/.+/)
+            division = text.strip.slice!(/(([A-Z](\S+) ?)+)/)
+            p text
+            p division            
+            p '----------------'
           end
         end
 

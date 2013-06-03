@@ -33,11 +33,11 @@ class Election < ActiveRecord::Base
   end
 
   # @return [String] the list of elections as a CSV file
-  def self.to_csv
+  def self.to_csv(elections = Election.all)
     CSV.generate(row_sep: "\r\n") do |csv|
       csv << ['id', 'year', 'start_date', 'end_date', 'jurisdiction', 'division', 'election_type', 'scope', 'notes', 'source', 'scheduled']
-      all.each do |election|
-        csv << election.attributes.values_at(:id, :year, :start_date, :end_date, :jurisdiction, :division, :election_type, :scope, :notes, :source) + [election.scheduled]
+      elections.each do |election|
+        csv << election.attributes.values_at('id', 'year', 'start_date', 'end_date', 'jurisdiction', 'division', 'election_type', 'scope', 'notes', 'source') + [election.scheduled]
       end
     end
   end
