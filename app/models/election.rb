@@ -22,7 +22,7 @@ class Election < ActiveRecord::Base
 
   # @param [Hash] attributes attributes
   def self.create_or_update(attributes)
-    criteria = attributes.slice(:start_date, :jurisdiction, :election_type)
+    criteria = attributes.slice(:start_date, :jurisdiction, :election_type, :division)
     election = Election.where(criteria).first_or_initialize
     election.assign_attributes(attributes)
     unless election.valid?

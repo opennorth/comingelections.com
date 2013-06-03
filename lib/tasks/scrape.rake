@@ -88,25 +88,25 @@ namespace :scrape do
 
         text.gsub!(/provincial|municipal|ward|in|,$/i,'\1')
 #        p text if !text.empty? && type == 'by-election'
-        text.slice!(/(([A-Z](\S+) ?)+)/)
-        division = $1 unless $1 == '.'
+        divisions = text.slice!(/(([A-Z](\S+) ?)+)/)
+        
 
 
         if jurisdiction.nil? || jurisdiction.strip.empty?
           if li.at_css('a/@title[contains("does not exist")]') || !li.at_css('a')
             puts "Warning: not enough info for #{li.text}"
           else
+            p li.at_css('a').text
             doc = Nokogiri::HTML(open("http://en.wikipedia.org#{li.at_css('a')[:href]}"))
             if doc.at_css('.infobox th')
               jurisdiction = doc.at_css('.infobox th').text.slice!(/#{JURISDICTIONS}/) ||
               doc.at_css('h1.firstHeading span').text.slice!(/#{JURISDICTIONS}/)
             end
-            division = text.strip.slice!(/(([A-Z](\S+) ?)+)/)
-            p text
-            p division            
-            p '----------------'
+            divisions = text.strip.slice!(/(([A-Z](\S+) ?)+)/)
           end
+          if divisions.nil? then divisions = li.at_css('a').text.slice!(/(([A-Z](\S+) ?)+)/) end
         end
+        divisions = divisions.split(/,|and/) if divisions
 
         if jurisdiction == 'Federal'
           jurisdiction = 'Canada'
@@ -119,16 +119,11 @@ namespace :scrape do
           end
         end
         if type then type = type.downcase.gsub('s','') end
-        Election.create_or_update({
-          start_date: Date.parse("#{date} #{year}"),
-          jurisdiction: jurisdiction,
-          election_type: type,
-          scope: scope,
-          division: division,
-          source: source,
-        })
-      end
-    end    
+        save_election(date, year, jurisdiction, type, scope, divisions, source)
+    end
+  end
+
+   
     
 
     current_year = Date.today.year
@@ -179,4 +174,28 @@ namespace :scrape do
     end
   end
 
+  def save_election (date, year, jurisdiction, type, scope, divisions, source)
+    if divisions 
+      divisions.each do |division|
+        next if division.strip.empty? || division == '.'
+        Election.create_or_update({
+          start_date: Date.parse("#{date} #{year}"),
+          jurisdiction: jurisdiction,
+          election_type: type,
+          scope: scope,
+          division: division.strip,
+          source: source,
+        }) 
+      end  
+    else
+      Election.create_or_update({
+        start_date: Date.parse("#{date} #{year}"),
+        jurisdiction: jurisdiction,
+        election_type: type,
+        scope: scope,
+        division: nil,
+        source: source,
+      }) 
+    end
+  end
 end
