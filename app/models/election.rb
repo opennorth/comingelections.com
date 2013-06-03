@@ -11,6 +11,7 @@ class Election < ActiveRecord::Base
   validates_presence_of :division, if: :by_election?
   validates_inclusion_of :jurisdiction, in: ComingElections::JURISDICTIONS
   validates_inclusion_of :election_type, in: ComingElections::ELECTION_TYPES
+  validates_inclusion_of :scope, in: ComingElections::SCOPES, allow_blank: true
   validate :end_date_must_be_after_start_date
 
   @invalid = 0;
@@ -33,7 +34,7 @@ class Election < ActiveRecord::Base
   end
 
   # @return [String] the list of elections as a CSV file
-  def self.to_csv(elections = Election.all)
+  def self.to_csv(elections = all)
     CSV.generate(row_sep: "\r\n") do |csv|
       csv << ['id', 'year', 'start_date', 'end_date', 'jurisdiction', 'division', 'election_type', 'scope', 'notes', 'source', 'scheduled']
       elections.each do |election|

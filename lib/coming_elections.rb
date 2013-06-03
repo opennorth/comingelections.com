@@ -1,4 +1,18 @@
 module ComingElections
+  SCOPES = [
+    'cities and (southern) towns and villages',
+    'cities, towns and villages',
+    'even-numbered rural municipalities',
+    'odd-numbered rural municipalities',
+    'hamlets',
+    'municipalities',
+    'resort villages',
+    'rural municipalities',
+    'taxed communities',
+    'tlicho community governments',
+    'urban municipalities',
+  ]
+
   JURISDICTIONS = [
     'Canada',
     # Provinces
