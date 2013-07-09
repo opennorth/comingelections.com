@@ -9,6 +9,11 @@ MONTHS = %w(January February March April May June July August September October 
 JURISDICTIONS = ComingElections::JURISDICTIONS.map do |jurisdiction|
   Regexp.escape(jurisdiction)
 end.join('|')
+SCOPES = ComingElections::SCOPES.map do |scope|
+  Regexp.escape(scope)
+end.join('|')
+
+
 
 namespace :scrape do
   desc "Scrape the Public Service Commission of Canada"
@@ -83,10 +88,9 @@ namespace :scrape do
           type = 'general'
         end
 
-        text.slice!(/\(([^)]+)\)/)
-        scope = $1
+        scope = text.slice!(/#{SCOPES}/)
 
-        text.gsub!(/provincial|municipal|ward|in|,$/i,'\1')
+        text.gsub!(/provincial|municipal|ward| in |,$/i,'\1')
 #        p text if !text.empty? && type == 'by-election'
         divisions = text.slice!(/(([A-Z](\S+) ?)+)/)
         
@@ -96,7 +100,6 @@ namespace :scrape do
           if li.at_css('a/@title[contains("does not exist")]') || !li.at_css('a')
             puts "Warning: not enough info for #{li.text}"
           else
-            p li.at_css('a').text
             doc = Nokogiri::HTML(open("http://en.wikipedia.org#{li.at_css('a')[:href]}"))
             if doc.at_css('.infobox th')
               jurisdiction = doc.at_css('.infobox th').text.slice!(/#{JURISDICTIONS}/) ||
@@ -113,7 +116,10 @@ namespace :scrape do
           type ||= 'general'
         end
 
-        unless text.strip.empty? 
+        unless text.strip.empty?
+          if jurisdiction.nil?
+            jurisdiction = 'Canada' if text.include? 'federal' or text.include? 'Federal'
+          end 
           if jurisdiction.nil? || type.nil?
             puts "Warning: Unrecognized text #{text.inspect}"
           end

@@ -36,6 +36,9 @@ module ComingElections
     'Cowansville',
     'Magog',
     'Vancouver',
+    'Winnipeg',
+    'Montreal',
+    'Iqaluit'
   ]
 
   ELECTION_TYPES = %w(general by-election municipal)
