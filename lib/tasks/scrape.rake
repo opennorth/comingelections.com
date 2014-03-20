@@ -5,6 +5,16 @@ require 'open-uri'
 
 require 'nokogiri'
 
+def pattern(array)
+  array.map do |jurisdiction|
+    if jurisdiction == 'Quebec'
+      /Quebec(?! City)/
+    else
+      Regexp.escape(jurisdiction)
+    end
+  end.join('|')
+end
+
 MONTHS = %w(January February March April May June July August September October November December)
 JURISDICTIONS = ComingElections::JURISDICTIONS.map do |jurisdiction|
   Regexp.escape(jurisdiction)
@@ -12,8 +22,6 @@ end.join('|')
 SCOPES = ComingElections::SCOPES.map do |scope|
   Regexp.escape(scope)
 end.join('|')
-
-
 
 namespace :scrape do
   desc "Scrape the Public Service Commission of Canada"
@@ -27,7 +35,7 @@ namespace :scrape do
       tds = tr.css('td')
       tds[1].css('br').each{|br| br.replace(' ')}
 
-      type, notes = tds[1].text.downcase.match(/\A([^(]+?)(?: \(([^)]+)\))?\z/)[1..2]
+      type, notes = tds[1].text.match(/\A([^(]+?)(?: \(([^)]+)\))?\z/)[1..2]
       if %w(federal provincial territorial).include?(type)
         type = 'general'
       end
@@ -41,7 +49,7 @@ namespace :scrape do
       Election.create_or_update({
         start_date: Date.parse(tds[2].text),
         jurisdiction: tds[0].text,
-        election_type: type,
+        election_type: type.downcase,
         scope: scope,
         notes: notes,
         source: source,
@@ -66,6 +74,8 @@ namespace :scrape do
         end
 
         #if there is a nested list (one date and many elections)
+        # @see http://en.wikipedia.org/wiki/Canadian_electoral_calendar,_2011
+        # @see http://en.wikipedia.org/wiki/Canadian_electoral_calendar,_2012
         if MONTHS.include?(date.split(' ')[0]) && !text
           li.xpath('.//li').each do |nested_li|
             date = date.split("\n")[0]
@@ -76,16 +86,94 @@ namespace :scrape do
       end
     end
 
+    @divisions = []
+
     def parse_line(source, li, year, date, text)
       if !text[/leadership|co-spokesperson|referendum|plebiscite|school/i]
-        # @todo Don't skip.
-        return if text[/By-elections to the 38th Canadian Parliament/]
+        original = text.dup
 
-        type         = text.slice!(/\b(?:by-elections?)\b/) || text.slice!(/\b(general|municipal|provincial)\b/i)
-        jurisdiction = text.slice!(/#{JURISDICTIONS}|Federal/)
+        # Remove last period.
+        text.chomp!('.')
+        # Remove years.
+        text.gsub!(/(?:, )\b\d{4}\b/, '')
+        # Remove useless text.
+        text.gsub!(/\(postponed from general\)|\b(?:City Council|District|Ward(?: of )?)\b/, '')
 
-        if type == 'provincial'
-          type = 'general'
+        # By-election pattern.
+        pattern = /\b(federal|municipal|provincial|territorial) (by-election)(s)?(?: for|(?: held)? in)?\b/i
+        if text[pattern]
+          hint = $1.downcase
+          type = $2
+          multiple = !!$3
+          text.sub!(pattern, '')
+
+          text = text.strip.chomp(',')
+
+          jurisdiction = nil
+          case hint
+          when 'federal'
+            jurisdiction = 'Canada'
+            text.gsub!(/canadian|federal/i, '')
+          when 'provincial'
+            text.slice!(/(?:in )?(#{PROVINCES_PATTERN})/)
+            jurisdiction = $1
+
+            if jurisdiction.nil?
+              ComingElections::DIVISIONS.each do |key,values|
+                # Division names are unique across provinces. However, Wikipedia
+                # sometimes doesn't use the official name for a division; we
+                # therefore run the risk of matching the incorrect province.
+                if ComingElections::PROVINCES.include?(key) && values.include?(text)
+                  jurisdiction = key
+                  break
+                end
+              end
+            end
+          when 'municipal'
+            # May be helpful later if we have a later list of municipalities.
+            hint = text.slice!(/#{PROVINCES_PATTERN}/)
+            text = text.strip.chomp(',')
+
+            text.slice!(/(?:in )?(#{MUNICIPALITIES_PATTERN})/)
+            jurisdiction = $1
+          when 'territorial'
+            text.slice!(/(?:in )?(#{TERRITORIES_PATTERN})/)
+            jurisdiction = $1
+          end
+
+          text = text.strip.chomp(',')
+
+          parts = if multiple
+            text.split(/, (?:and )?| and /)
+          else
+            [text]
+          end
+
+          condition = parts.all? do |part|
+            ComingElections::DIVISIONS.key?(jurisdiction) && ComingElections::DIVISIONS[jurisdiction].include?(part)
+          end
+
+          if condition
+            divisions = parts
+            text.clear
+          end
+        else
+          type = text.slice!(/\b(?:general|municipal|provincial)\b/i)
+          jurisdiction = text.slice!(/#{JURISDICTIONS_PATTERN}|Canadian|Federal/)
+        end
+
+        if type == 'by-election' && text.present?
+          puts "#{text.inspect} #{original.inspect}: #{jurisdiction} #{type}"
+        end
+
+        if type
+          type.downcase!
+          type = case type
+          when 'provincial'
+            'general'
+          else
+            type
+          end
         end
 
         scope = text.slice!(/#{SCOPES}/)
@@ -93,25 +181,29 @@ namespace :scrape do
         text.gsub!(/provincial|municipal|ward| in |,$/i,'\1')
 #        p text if !text.empty? && type == 'by-election'
         divisions = text.slice!(/(([A-Z](\S+) ?)+)/)
-        
 
+        divisions = nil
+        #divisions = text.slice!(/([A-Z]\S+ ?)+/) # check
+        #@divisions << divisions if divisions
 
         if jurisdiction.nil? || jurisdiction.strip.empty?
           if li.at_css('a/@title[contains("does not exist")]') || !li.at_css('a')
-            puts "Warning: not enough info for #{li.text}"
+            #puts "Warning: not enough info for #{li.text}"
           else
             doc = Nokogiri::HTML(open("http://en.wikipedia.org#{li.at_css('a')[:href]}"))
             if doc.at_css('.infobox th')
-              jurisdiction = doc.at_css('.infobox th').text.slice!(/#{JURISDICTIONS}/) ||
-              doc.at_css('h1.firstHeading span').text.slice!(/#{JURISDICTIONS}/)
+              jurisdiction = doc.at_css('.infobox th').text.slice!(/#{JURISDICTIONS_PATTERN}/) ||
+                doc.at_css('h1.firstHeading span').text.slice!(/#{JURISDICTIONS_PATTERN}/)
             end
-            divisions = text.strip.slice!(/(([A-Z](\S+) ?)+)/)
+            #divisions = text.strip.slice!(/(([A-Z](\S+) ?)+)/) # check
           end
-          if divisions.nil? then divisions = li.at_css('a').text.slice!(/(([A-Z](\S+) ?)+)/) end
+          if divisions.nil?
+            #divisions = li.at_css('a').text.slice!(/([A-Z]\S+ ?)+/)
+          end
         end
-        divisions = divisions.split(/,|and/) if divisions
+        #divisions = divisions.split(/,|and/) if divisions
 
-        if jurisdiction == 'Federal'
+        if %w(Federal Canadian).include?(jurisdiction)
           jurisdiction = 'Canada'
           type ||= 'general'
         end
@@ -120,17 +212,17 @@ namespace :scrape do
           if jurisdiction.nil?
             jurisdiction = 'Canada' if text.include? 'federal' or text.include? 'Federal'
           end 
+
           if jurisdiction.nil? || type.nil?
-            puts "Warning: Unrecognized text #{text.inspect}"
+            #puts "Warning: Unrecognized text #{text.inspect} in #{original.inspect} #{source}"
+          else
+            #puts "Ignoring text #{text.inspect} in #{original.inspect} #{source}"
           end
         end
-        if type then type = type.downcase.gsub('s','') end
-        save_election(date, year, jurisdiction, type, scope, divisions, source)
-    end
-  end
 
-   
-    
+        save_election(date, year, jurisdiction, type, scope, divisions, source)
+      end
+    end
 
     current_year = Date.today.year
     doc = Nokogiri::HTML(open('http://en.wikipedia.org/wiki/Canadian_electoral_calendar'))
@@ -139,6 +231,8 @@ namespace :scrape do
         parse_wiki(a[:href], a.text)
       end
     end
+
+    #puts @divisions.uniq.sort
   end
 
   # @todo Compare to schedules. If identical, remove this Rake task.
@@ -181,27 +275,21 @@ namespace :scrape do
   end
 
   def save_election (date, year, jurisdiction, type, scope, divisions, source)
-    if divisions 
-      divisions.each do |division|
-        next if division.strip.empty? || division == '.'
-        Election.create_or_update({
-          start_date: Date.parse("#{date} #{year}"),
-          jurisdiction: jurisdiction,
-          election_type: type,
-          scope: scope,
-          division: division.strip,
-          source: source,
-        }) 
+    attributes = {
+      start_date: Date.parse("#{date} #{year}"),
+      jurisdiction: jurisdiction,
+      election_type: type,
+      scope: scope,
+      source: source,
+    }
+    if divisions
+      divisions.map(&:strip).each do |division|
+        unless division == '.' || division.empty?
+          Election.create_or_update(attributes.merge(division: division))
+        end
       end  
     else
-      Election.create_or_update({
-        start_date: Date.parse("#{date} #{year}"),
-        jurisdiction: jurisdiction,
-        election_type: type,
-        scope: scope,
-        division: nil,
-        source: source,
-      }) 
+      Election.create_or_update(attributes)
     end
   end
 end
