@@ -10,7 +10,7 @@ describe ElectionSchedule do
       start_year: 1919,
       jurisdiction: 'Canada',
       election_type: 'general',
-      scope: 'foo',
+      scope: 'hamlets',
       notes: 'bar',
       source: 'http://example.com/',
     }
@@ -26,7 +26,7 @@ describe ElectionSchedule do
       election.start_date.should == Date.new(1933, 1, 1)
       election.jurisdiction.should == 'Canada'
       election.election_type.should == 'general'
-      election.scope.should == 'foo'
+      election.scope.should == 'hamlets'
       election.notes.should == 'bar'
       election.source.should == 'http://example.com/'
       election.scheduled.should == true

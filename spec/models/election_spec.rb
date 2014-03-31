@@ -40,6 +40,12 @@ describe Election do
         Election.create_or_update(attributes.merge(election_type: 'municipal'))
       }.to change(Election, :count).by(2)
     end
+
+    it 'should raise an error if the record is invalid' do
+      expect{
+        Election.create_or_update(attributes.merge(election_type: 'foo'))
+      }.to raise_error
+    end
   end
 
   describe '#by_election?' do

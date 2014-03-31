@@ -17,6 +17,7 @@ module ComingElections
     'urban municipalities',
   ]
 
+  # @todo Use ocd-division-ids
   PROVINCES = [
     'Alberta',
     'British Columbia',
@@ -30,22 +31,32 @@ module ComingElections
     'Saskatchewan',
   ]
 
+  # @todo Use ocd-division-ids
   TERRITORIES = [
     'Northwest Territories',
     'Nunavut',
     'Yukon',
-    # Municipalities
+  ]
+
+  JURISDICTIONS = [
+    'Canada',
+  ] + PROVINCES + TERRITORIES
+
+  # @todo Use ocd-division-ids
+  MUNICIPALITIES = [
+    # Nova Scotia
     'Bedford',
+    # Quebec
     'Bromont',
     'Cowansville',
     'Magog',
-    'Vancouver',
-    'Winnipeg',
-    'Montreal',
-    'Iqaluit'
-  ]
-
-  MUNICIPALITIES = [
+    'Gatineau', # Orée-du-Parc
+    'Montreal', # Marie-Victorin, Outremont, Rivière-des-Prairies
+    'Quebec City',
+    # Ontario
+    'Ottawa', # Orléans
+    # Manitoba
+    'Winnipeg', # River Heights-Fort Garry
     # Alberta
     'Hinton',
     'Lacombe County',
@@ -53,21 +64,13 @@ module ComingElections
     'Rocky View County',
     'Stony Plain',
     'Yellowhead County',
-    # Manitoba
-    'Winnipeg', # River Heights-Fort Garry
-    # Ontario
-    'Ottawa', # Orléans
-    # Quebec
-    'Gatineau', # Orée-du-Parc
-    'Montreal', # Marie-Victorin, Outremont, Rivière-des-Prairies
-    'Quebec City',
+    # British Columbia
+    'Vancouver',
+    # Nunavut
+    'Iqaluit',
   ]
 
-  JURISDICTIONS = [
-    'Canada',
-  ] + PROVINCES + TERRITORIES
-
-  # @see https://github.com/opencivicdata/ocd-division-ids/blob/master/identifiers/country-ca/
+  # @todo Use ocd-division-ids
   DIVISIONS = {
     "Canada" => [
       "Avalon",
@@ -377,7 +380,7 @@ module ComingElections
       "West Vancouver–Sunshine Coast–Sea to Sky Country",
       "Yukon",
       "Western Arctic",
-      "Nunavut",      
+      "Nunavut",
     ],
     "Alberta" => [
       "Dunvegan-Central Peace-Notley",

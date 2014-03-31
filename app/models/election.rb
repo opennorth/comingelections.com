@@ -24,7 +24,7 @@ class Election < ActiveRecord::Base
     criteria = attributes.slice(:start_date, :jurisdiction, :election_type, :division)
     election = Election.where(criteria).first_or_initialize
     election.assign_attributes(attributes)
-    election.save
+    election.save!
   end
 
   # @return [String] the list of elections as a CSV file

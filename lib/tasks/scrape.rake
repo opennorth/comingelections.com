@@ -1,4 +1,5 @@
 # coding: utf-8
+
 require 'csv'
 require 'date'
 require 'open-uri'
@@ -16,12 +17,11 @@ def pattern(array)
 end
 
 MONTHS = %w(January February March April May June July August September October November December)
-JURISDICTIONS = ComingElections::JURISDICTIONS.map do |jurisdiction|
-  Regexp.escape(jurisdiction)
-end.join('|')
-SCOPES = ComingElections::SCOPES.map do |scope|
-  Regexp.escape(scope)
-end.join('|')
+SCOPES = pattern(ComingElections::SCOPES)
+PROVINCES = pattern(ComingElections::PROVINCES)
+TERRITORIES = pattern(ComingElections::TERRITORIES)
+JURISDICTIONS = pattern(ComingElections::JURISDICTIONS)
+MUNICIPALITIES = pattern(ComingElections::MUNICIPALITIES)
 
 namespace :scrape do
   desc "Scrape the Public Service Commission of Canada"
@@ -36,20 +36,21 @@ namespace :scrape do
       tds[1].css('br').each{|br| br.replace(' ')}
 
       type, notes = tds[1].text.match(/\A([^(]+?)(?: \(([^)]+)\))?\z/)[1..2]
+      type.downcase!
+
       if %w(federal provincial territorial).include?(type)
         type = 'general'
       end
 
       scope = nil
       if ['cities, towns and villages', 'hamlets', 'municipalities', 'resort villages', 'rural municipalities'].include?(type)
-        scope = type
-        type = 'municipal'
+        scope, type = type, 'municipal'
       end
 
       Election.create_or_update({
         start_date: Date.parse(tds[2].text),
         jurisdiction: tds[0].text,
-        election_type: type.downcase,
+        election_type: type,
         scope: scope,
         notes: notes,
         source: source,
@@ -57,6 +58,7 @@ namespace :scrape do
     end
   end
 
+  # @note This is the part of the app that will require maintenance.
   desc "Scrape Wikipedia"
   task :wikipedia => :environment do
     def parse_wiki(href, year)
@@ -115,7 +117,7 @@ namespace :scrape do
             jurisdiction = 'Canada'
             text.gsub!(/canadian|federal/i, '')
           when 'provincial'
-            text.slice!(/(?:in )?(#{PROVINCES_PATTERN})/)
+            text.slice!(/(?:in )?(#{PROVINCES})/)
             jurisdiction = $1
 
             if jurisdiction.nil?
@@ -131,13 +133,13 @@ namespace :scrape do
             end
           when 'municipal'
             # May be helpful later if we have a later list of municipalities.
-            hint = text.slice!(/#{PROVINCES_PATTERN}/)
+            hint = text.slice!(/#{PROVINCES}/)
             text = text.strip.chomp(',')
 
-            text.slice!(/(?:in )?(#{MUNICIPALITIES_PATTERN})/)
+            text.slice!(/(?:in )?(#{MUNICIPALITIES})/)
             jurisdiction = $1
           when 'territorial'
-            text.slice!(/(?:in )?(#{TERRITORIES_PATTERN})/)
+            text.slice!(/(?:in )?(#{TERRITORIES})/)
             jurisdiction = $1
           end
 
@@ -159,7 +161,7 @@ namespace :scrape do
           end
         else
           type = text.slice!(/\b(?:general|municipal|provincial)\b/i)
-          jurisdiction = text.slice!(/#{JURISDICTIONS_PATTERN}|Canadian|Federal/)
+          jurisdiction = text.slice!(/#{JURISDICTIONS}|Canadian|Federal/)
         end
 
         if type == 'by-election' && text.present?
@@ -179,7 +181,7 @@ namespace :scrape do
         scope = text.slice!(/#{SCOPES}/)
 
         text.gsub!(/provincial|municipal|ward| in |,$/i,'\1')
-#        p text if !text.empty? && type == 'by-election'
+        # p text if !text.empty? && type == 'by-election'
         divisions = text.slice!(/(([A-Z](\S+) ?)+)/)
 
         divisions = nil
@@ -192,8 +194,8 @@ namespace :scrape do
           else
             doc = Nokogiri::HTML(open("http://en.wikipedia.org#{li.at_css('a')[:href]}"))
             if doc.at_css('.infobox th')
-              jurisdiction = doc.at_css('.infobox th').text.slice!(/#{JURISDICTIONS_PATTERN}/) ||
-                doc.at_css('h1.firstHeading span').text.slice!(/#{JURISDICTIONS_PATTERN}/)
+              jurisdiction = doc.at_css('.infobox th').text.slice!(/#{JURISDICTIONS}/) ||
+                doc.at_css('h1.firstHeading span').text.slice!(/#{JURISDICTIONS}/)
             end
             #divisions = text.strip.slice!(/(([A-Z](\S+) ?)+)/) # check
           end
@@ -211,7 +213,7 @@ namespace :scrape do
         unless text.strip.empty?
           if jurisdiction.nil?
             jurisdiction = 'Canada' if text.include? 'federal' or text.include? 'Federal'
-          end 
+          end
 
           if jurisdiction.nil? || type.nil?
             #puts "Warning: Unrecognized text #{text.inspect} in #{original.inspect} #{source}"
@@ -220,7 +222,22 @@ namespace :scrape do
           end
         end
 
-        save_election(date, year, jurisdiction, type, scope, divisions, source)
+        attributes = {
+          start_date: Date.parse("#{date} #{year}"),
+          jurisdiction: jurisdiction,
+          election_type: type,
+          scope: scope,
+          source: source,
+        }
+        if divisions
+          divisions.map(&:strip).each do |division|
+            unless division == '.' || division.empty?
+              Election.create_or_update(attributes.merge(division: division))
+            end
+          end
+        else
+          Election.create_or_update(attributes)
+        end
       end
     end
 
@@ -261,7 +278,7 @@ namespace :scrape do
             scope = texts[index - 1].gsub("\n", '').sub(/\AFor /, '').sub(/:\z/, '').downcase.strip
           end
 
-          Election.create_or_update({
+          p Election.create_or_update({
             start_date: Date.parse(text),
             jurisdiction: jurisdiction,
             election_type: 'municipal',
@@ -271,25 +288,6 @@ namespace :scrape do
           })
         end
       end
-    end
-  end
-
-  def save_election (date, year, jurisdiction, type, scope, divisions, source)
-    attributes = {
-      start_date: Date.parse("#{date} #{year}"),
-      jurisdiction: jurisdiction,
-      election_type: type,
-      scope: scope,
-      source: source,
-    }
-    if divisions
-      divisions.map(&:strip).each do |division|
-        unless division == '.' || division.empty?
-          Election.create_or_update(attributes.merge(division: division))
-        end
-      end  
-    else
-      Election.create_or_update(attributes)
     end
   end
 end
