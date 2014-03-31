@@ -1,7 +1,7 @@
 class ElectionsController < ApplicationController
   def index
     range = Date.today..1.year.from_now.to_date
-    @elections = Election.where("start_date >= ?",Date.today) + ElectionSchedule.within(range)
+    @elections = Election.where("start_date >= ?",Date.today) + ElectionSchedule.within(range).order(:start_date)
 
     respond_to do |format|
       format.html
