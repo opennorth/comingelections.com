@@ -58,6 +58,46 @@ namespace :scrape do
     end
   end
 
+  # @todo Compare to schedules. If identical, remove this Rake task.
+  # @see https://docs.google.com/a/opennorth.ca/spreadsheet/ccc?key=0AtzgYYy0ZABtdHU4ZUxlNEFKbWRvN242M0hPRVBQMWc&usp=drive_web#gid=0
+  desc "Scrape Muniscope"
+  task :muniscope => :environment do
+    source = 'http://www.icurr.org/research/municipal_facts/Elections/index.php'
+    doc = Nokogiri::HTML(open(source))
+
+    doc.xpath('//table/tbody//tr').each do |tr|
+      texts = tr.at_xpath('.//td[@class="rcell"]').to_s.split('<br>').map do |html|
+        Nokogiri::HTML(html).text.strip
+      end
+
+      texts.each_with_index do |text,index|
+        if MONTHS.include?(text.split(' ')[0])
+          jurisdiction = tr.at_xpath('.//td[@class="lcell"]').text
+          if jurisdiction == 'Québec'
+            jurisdiction = 'Quebec'
+          end
+
+          notes = nil
+          scope = nil
+          if index.nonzero?
+            texts[index - 1].slice!(/\(([^)]+)\):\z/)
+            notes = $1
+            scope = texts[index - 1].gsub("\n", '').sub(/\AFor /, '').sub(/:\z/, '').downcase.strip
+          end
+
+          Election.create_or_update({
+            start_date: Date.parse(text),
+            jurisdiction: jurisdiction,
+            election_type: 'municipal',
+            scope: scope,
+            notes: notes,
+            source: source,
+          })
+        end
+      end
+    end
+  end
+
   # @note This is the part of the app that will require maintenance.
   desc "Scrape Wikipedia"
   task :wikipedia => :environment do
@@ -250,44 +290,5 @@ namespace :scrape do
     end
 
     #puts @divisions.uniq.sort
-  end
-
-  # @todo Compare to schedules. If identical, remove this Rake task.
-  desc "Scrape Muniscope"
-  task :muniscope => :environment do
-    source = 'http://www.icurr.org/research/municipal_facts/Elections/index.php'
-    doc = Nokogiri::HTML(open(source))
-
-    doc.xpath('//table/tbody//tr').each do |tr|
-      texts = tr.at_xpath('.//td[@class="rcell"]').to_s.split('<br>').map do |html|
-        Nokogiri::HTML(html).text.strip
-      end
-
-      texts.each_with_index do |text,index|
-        if MONTHS.include?(text.split(' ')[0])
-          jurisdiction = tr.at_xpath('.//td[@class="lcell"]').text
-          if jurisdiction == 'Québec'
-            jurisdiction = 'Quebec'
-          end
-
-          notes = nil
-          scope = nil
-          if index.nonzero?
-            texts[index - 1].slice!(/\(([^)]+)\):\z/)
-            notes = $1
-            scope = texts[index - 1].gsub("\n", '').sub(/\AFor /, '').sub(/:\z/, '').downcase.strip
-          end
-
-          p Election.create_or_update({
-            start_date: Date.parse(text),
-            jurisdiction: jurisdiction,
-            election_type: 'municipal',
-            scope: scope,
-            notes: notes,
-            source: source,
-          })
-        end
-      end
-    end
   end
 end
