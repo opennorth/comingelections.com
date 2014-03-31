@@ -14,8 +14,6 @@ class Election < ActiveRecord::Base
   validates_inclusion_of :scope, in: ComingElections::SCOPES, allow_blank: true
   validate :end_date_must_be_after_start_date
 
-  @invalid = 0;
-
   # @param [Range] range a range of dates
   def self.within(range)
     where(start_date: range)
@@ -26,10 +24,6 @@ class Election < ActiveRecord::Base
     criteria = attributes.slice(:start_date, :jurisdiction, :election_type, :division)
     election = Election.where(criteria).first_or_initialize
     election.assign_attributes(attributes)
-    unless election.valid?
-      p attributes
-      p @invalid = @invalid +1
-    end
     election.save
   end
 
