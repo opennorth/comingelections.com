@@ -1,4 +1,4 @@
-# RailsAdmin config file. Generated on May 26, 2013 18:36
+# RailsAdmin config file. Generated on April 02, 2014 10:12
 # See github.com/sferik/rails_admin for more informations
 
 RailsAdmin.config do |config|
@@ -27,10 +27,10 @@ RailsAdmin.config do |config|
   # config.default_items_per_page = 20
 
   # Exclude specific models (keep the others):
-  # config.excluded_models = ['Election', 'User']
+  # config.excluded_models = ['Election', 'ElectionSchedule', 'User']
 
   # Include specific models (exclude the others):
-  # config.included_models = ['Election', 'User']
+  # config.included_models = ['Election', 'ElectionSchedule', 'User']
 
   # Label methods for model instances:
   # config.label_methods << :description # Default is [:name, :title]
@@ -50,36 +50,11 @@ RailsAdmin.config do |config|
   # Now you probably need to tour the wiki a bit: https://github.com/sferik/rails_admin/wiki
   # Anyway, here is how RailsAdmin saw your application's models when you ran the initializer:
 
-  ### Election_schedules ###
-  config.model 'ElectionSchedule' do 
-    list do
-      field :jurisdiction
-      field :rank
-      field :weekday
-      field :month
-      field :term_length
-      field :start_year
-      field :source
-      field :scope
-      field :notes
-      field :election_type
-    end
-  end
+
 
   ###  Election  ###
 
-   config.model 'Election' do
-    list do
-      field :jurisdiction
-      field :election_type
-      field :start_date
-      field :division
-      field :scope
-      field :notes
-      field :source
-      field :scheduled
-    end
-  end
+  # config.model 'Election' do
 
   #   # You can copy this to a 'rails_admin do ... end' block inside your election.rb model definition
 
@@ -94,7 +69,59 @@ RailsAdmin.config do |config|
   #     configure :start_date, :date 
   #     configure :end_date, :date 
   #     configure :jurisdiction, :string 
+  #     configure :election_type, :string 
   #     configure :division, :string 
+  #     configure :scope, :string 
+  #     configure :notes, :string 
+  #     configure :source, :string 
+  #     configure :created_at, :datetime 
+  #     configure :updated_at, :datetime 
+
+  #   # Cross-section configuration:
+
+  #     # object_label_method :name     # Name of the method called for pretty printing an *instance* of ModelName
+  #     # label 'My model'              # Name of ModelName (smartly defaults to ActiveRecord's I18n API)
+  #     # label_plural 'My models'      # Same, plural
+  #     # weight 0                      # Navigation priority. Bigger is higher.
+  #     # parent OtherModel             # Set parent model for navigation. MyModel will be nested below. OtherModel will be on first position of the dropdown
+  #     # navigation_label              # Sets dropdown entry's name in navigation. Only for parents!
+
+  #   # Section specific configuration:
+
+  #     list do
+  #       # filters [:id, :name]  # Array of field names which filters should be shown by default in the table header
+  #       # items_per_page 100    # Override default_items_per_page
+  #       # sort_by :id           # Sort column (default is primary key)
+  #       # sort_reverse true     # Sort direction (default is true for primary key, last created first)
+  #     end
+  #     show do; end
+  #     edit do; end
+  #     export do; end
+  #     # also see the create, update, modal and nested sections, which override edit in specific cases (resp. when creating, updating, modifying from another model in a popup modal or modifying from another model nested form)
+  #     # you can override a cross-section field configuration in any section with the same syntax `configure :field_name do ... end`
+  #     # using `field` instead of `configure` will exclude all other fields and force the ordering
+  # end
+
+
+  ###  ElectionSchedule  ###
+
+  # config.model 'ElectionSchedule' do
+
+  #   # You can copy this to a 'rails_admin do ... end' block inside your election_schedule.rb model definition
+
+  #   # Found associations:
+
+
+
+  #   # Found columns:
+
+  #     configure :id, :integer 
+  #     configure :rank, :integer 
+  #     configure :weekday, :integer 
+  #     configure :month, :integer 
+  #     configure :term_length, :integer 
+  #     configure :start_year, :integer 
+  #     configure :jurisdiction, :string 
   #     configure :election_type, :string 
   #     configure :scope, :string 
   #     configure :notes, :string 
