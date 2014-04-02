@@ -1,10 +1,6 @@
 # coding: utf-8
 
-require 'csv'
-require 'date'
 require 'open-uri'
-
-require 'nokogiri'
 
 def pattern(array)
   array.map do |jurisdiction|
@@ -31,6 +27,7 @@ namespace :scrape do
 
     doc.xpath('//tr').each do |tr|
       next if tr.at_css('th')
+      scope = nil
 
       tds = tr.css('td')
       tds[1].css('br').each{|br| br.replace(' ')}
@@ -41,8 +38,6 @@ namespace :scrape do
       if %w(federal provincial territorial).include?(type)
         type = 'general'
       end
-
-      scope = nil
       if ['cities, towns and villages', 'hamlets', 'municipalities', 'resort villages', 'rural municipalities'].include?(type)
         scope, type = type, 'municipal'
       end
@@ -77,11 +72,8 @@ namespace :scrape do
             jurisdiction = 'Quebec'
           end
 
-          notes = nil
           scope = nil
           if index.nonzero?
-            texts[index - 1].slice!(/\(([^)]+)\):\z/)
-            notes = $1
             scope = texts[index - 1].gsub("\n", '').sub(/\AFor /, '').sub(/:\z/, '').downcase.strip
           end
 
@@ -101,35 +93,6 @@ namespace :scrape do
   # @note This is the part of the app that will require maintenance.
   desc "Scrape Wikipedia"
   task :wikipedia => :environment do
-    def parse_wiki(href, year)
-      source = "http://en.wikipedia.org#{href}"
-      doc = Nokogiri::HTML(open(source))
-      doc.xpath('//div[@id="mw-content-text"]/ul/li').each do |li|
-        date, text = li.text.sub(/ elections?, #{year}/, '').split(/:| - /)
-        unless MONTHS.include?(date.split(' ')[0])
-          date = li.at_xpath('parent::*/preceding-sibling::h2[1]').text + date
-          date = date.gsub('[edit]','')
-        end
-
-        if text
-          parse_line(source, li, year, date, text)
-        end
-
-        #if there is a nested list (one date and many elections)
-        # @see http://en.wikipedia.org/wiki/Canadian_electoral_calendar,_2011
-        # @see http://en.wikipedia.org/wiki/Canadian_electoral_calendar,_2012
-        if MONTHS.include?(date.split(' ')[0]) && !text
-          li.xpath('.//li').each do |nested_li|
-            date = date.split("\n")[0]
-            text = nested_li.text
-            parse_line(source, nested_li, year, date, text)
-          end
-        end
-      end
-    end
-
-    @divisions = []
-
     def parse_line(source, li, year, date, text)
       if !text[/leadership|co-spokesperson|referendum|plebiscite|school/i]
         original = text.dup
@@ -221,29 +184,29 @@ namespace :scrape do
         scope = text.slice!(/#{SCOPES}/)
 
         text.gsub!(/provincial|municipal|ward| in |,$/i,'\1')
-        # p text if !text.empty? && type == 'by-election'
+        p text if !text.empty? && type == 'by-election'
         divisions = text.slice!(/(([A-Z](\S+) ?)+)/)
 
         divisions = nil
-        #divisions = text.slice!(/([A-Z]\S+ ?)+/) # check
-        #@divisions << divisions if divisions
+        divisions = text.slice!(/([A-Z]\S+ ?)+/) # check
+        @divisions << divisions if divisions
 
         if jurisdiction.nil? || jurisdiction.strip.empty?
           if li.at_css('a/@title[contains("does not exist")]') || !li.at_css('a')
-            #puts "Warning: not enough info for #{li.text}"
+            puts "Warning: not enough info for #{li.text}"
           else
             doc = Nokogiri::HTML(open("http://en.wikipedia.org#{li.at_css('a')[:href]}"))
             if doc.at_css('.infobox th')
               jurisdiction = doc.at_css('.infobox th').text.slice!(/#{JURISDICTIONS}/) ||
                 doc.at_css('h1.firstHeading span').text.slice!(/#{JURISDICTIONS}/)
             end
-            #divisions = text.strip.slice!(/(([A-Z](\S+) ?)+)/) # check
+            divisions = text.strip.slice!(/(([A-Z](\S+) ?)+)/) # check
           end
           if divisions.nil?
-            #divisions = li.at_css('a').text.slice!(/([A-Z]\S+ ?)+/)
+            # divisions = li.at_css('a').text.slice!(/([A-Z]\S+ ?)+/) # @todo
           end
         end
-        #divisions = divisions.split(/,|and/) if divisions
+        divisions = divisions.split(/,|and/) if divisions
 
         if %w(Federal Canadian).include?(jurisdiction)
           jurisdiction = 'Canada'
@@ -256,9 +219,9 @@ namespace :scrape do
           end
 
           if jurisdiction.nil? || type.nil?
-            #puts "Warning: Unrecognized text #{text.inspect} in #{original.inspect} #{source}"
+            puts "Warning: Unrecognized text #{text.inspect} in #{original.inspect} #{source}"
           else
-            #puts "Ignoring text #{text.inspect} in #{original.inspect} #{source}"
+            puts "Ignoring text #{text.inspect} in #{original.inspect} #{source}"
           end
         end
 
@@ -272,20 +235,54 @@ namespace :scrape do
         if divisions
           divisions.map(&:strip).each do |division|
             unless division == '.' || division.empty?
-              Election.create_or_update(attributes.merge(division: division))
+              begin
+                Election.create_or_update(attributes.merge(division: division))
+              rescue ActiveRecord::RecordInvalid => e
+                puts "#{e.message}: #{original.inspect}: #{attributes.inspect}"
+              end
             end
           end
         else
-          Election.create_or_update(attributes)
+          begin
+            Election.create_or_update(attributes)
+          rescue ActiveRecord::RecordInvalid => e
+            puts "#{e.message}: #{original.inspect}: #{attributes.inspect}"
+          end
         end
       end
     end
 
-    current_year = Date.today.year
+    @divisions = []
+
     doc = Nokogiri::HTML(open('http://en.wikipedia.org/wiki/Canadian_electoral_calendar'))
     doc.xpath('//div[@id="mw-content-text"]/ul/li/a').each do |a|
-      if a.text[/\A\d{4}\z/] && a[:class] != 'new'
-        parse_wiki(a[:href], a.text)
+      year = a.text.to_i
+      if year >= 2007 && a[:class] != 'new' # The format before 2007 is different, and we don't need history.
+        source = "http://en.wikipedia.org#{a[:href]}"
+
+        doc = Nokogiri::HTML(open(source))
+        doc.xpath('//div[@id="mw-content-text"]/ul/li').each do |li|
+          date, text = li.text.sub(/ elections?(?:\[1\])?(?:, #{year})?/, '').split(/:| - /)
+          unless MONTHS.include?(date.split(' ')[0])
+            date = li.at_xpath('parent::*/preceding-sibling::h2[1]').text + date
+            date = date.gsub('[edit]','')
+          end
+
+          if text
+            parse_line(source, li, year, date, text)
+          end
+
+          #if there is a nested list (one date and many elections)
+          # @see http://en.wikipedia.org/wiki/Canadian_electoral_calendar,_2011
+          # @see http://en.wikipedia.org/wiki/Canadian_electoral_calendar,_2012
+          if MONTHS.include?(date.split(' ')[0]) && !text
+            li.xpath('.//li').each do |nested_li|
+              date = date.split("\n")[0]
+              text = nested_li.text
+              parse_line(source, nested_li, year, date, text)
+            end
+          end
+        end
       end
     end
 
