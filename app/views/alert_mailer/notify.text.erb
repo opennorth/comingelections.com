@@ -1,17 +1,14 @@
 <%- @elections.each do |election| -%>
-<%= election.start_date.strftime('%B %e, %Y')  %>
-<%= election.jurisdiction %> <%= election.election_type %>
+<%= election.start_date.strftime('%B %e')  %> <%= election.jurisdiction %> <%= election.election_type %>
 <%- if election.division? -%>
 <%= election.division %>
 <%- end -%>
-
 <%- if election.scope? -%>
 <%= election.scope %>
 <%- end -%>
 <%- if election.notes? -%>
 <%= election.notes %>
 <%- end -%>
+<%= election.source %> (<%= election.updated_at.strftime('%B %e, %Y') %>)
 
-Source: <%= election.source %>
-Retrieved: <%= election.updated_at.strftime('%B %e, %Y') %>
 <%- end -%>
