@@ -5,3 +5,12 @@ en:
   alert_mailer:
     notify:
       subject: Elections this week
+  date:
+    formats:
+      long: '%B %e, %Y'
+  activerecord:
+    attributes:
+      election:
+        election_type: Type
+      user:
+        notify: Notify?

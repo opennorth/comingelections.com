@@ -54,7 +54,7 @@ RailsAdmin.config do |config|
 
   ###  Election  ###
 
-  # config.model 'Election' do
+  config.model 'Election' do
 
   #   # You can copy this to a 'rails_admin do ... end' block inside your election.rb model definition
 
@@ -88,24 +88,30 @@ RailsAdmin.config do |config|
 
   #   # Section specific configuration:
 
-  #     list do
+      list do
+        field :jurisdiction
+        field :election_type
+        field :start_date
+        field :division
+        field :scope
+        field :notes
   #       # filters [:id, :name]  # Array of field names which filters should be shown by default in the table header
   #       # items_per_page 100    # Override default_items_per_page
   #       # sort_by :id           # Sort column (default is primary key)
   #       # sort_reverse true     # Sort direction (default is true for primary key, last created first)
-  #     end
+      end
   #     show do; end
   #     edit do; end
   #     export do; end
   #     # also see the create, update, modal and nested sections, which override edit in specific cases (resp. when creating, updating, modifying from another model in a popup modal or modifying from another model nested form)
   #     # you can override a cross-section field configuration in any section with the same syntax `configure :field_name do ... end`
   #     # using `field` instead of `configure` will exclude all other fields and force the ordering
-  # end
+  end
 
 
   ###  ElectionSchedule  ###
 
-  # config.model 'ElectionSchedule' do
+  config.model 'ElectionSchedule' do
 
   #   # You can copy this to a 'rails_admin do ... end' block inside your election_schedule.rb model definition
 
@@ -140,24 +146,34 @@ RailsAdmin.config do |config|
 
   #   # Section specific configuration:
 
-  #     list do
+      list do
+        field :jurisdiction
+        field :rank
+        field :weekday
+        field :month
+        field :term_length
+        field :start_year
+        field :source
+        field :scope
+        field :notes
+        field :election_type
   #       # filters [:id, :name]  # Array of field names which filters should be shown by default in the table header
   #       # items_per_page 100    # Override default_items_per_page
   #       # sort_by :id           # Sort column (default is primary key)
   #       # sort_reverse true     # Sort direction (default is true for primary key, last created first)
-  #     end
+      end
   #     show do; end
   #     edit do; end
   #     export do; end
   #     # also see the create, update, modal and nested sections, which override edit in specific cases (resp. when creating, updating, modifying from another model in a popup modal or modifying from another model nested form)
   #     # you can override a cross-section field configuration in any section with the same syntax `configure :field_name do ... end`
   #     # using `field` instead of `configure` will exclude all other fields and force the ordering
-  # end
+  end
 
 
   ###  User  ###
 
-  # config.model 'User' do
+  config.model 'User' do
 
   #   # You can copy this to a 'rails_admin do ... end' block inside your user.rb model definition
 
@@ -188,18 +204,20 @@ RailsAdmin.config do |config|
 
   #   # Section specific configuration:
 
-  #     list do
+      list do
+        field :email
+        field :notify
   #       # filters [:id, :name]  # Array of field names which filters should be shown by default in the table header
   #       # items_per_page 100    # Override default_items_per_page
   #       # sort_by :id           # Sort column (default is primary key)
   #       # sort_reverse true     # Sort direction (default is true for primary key, last created first)
-  #     end
+      end
   #     show do; end
   #     edit do; end
   #     export do; end
   #     # also see the create, update, modal and nested sections, which override edit in specific cases (resp. when creating, updating, modifying from another model in a popup modal or modifying from another model nested form)
   #     # you can override a cross-section field configuration in any section with the same syntax `configure :field_name do ... end`
   #     # using `field` instead of `configure` will exclude all other fields and force the ordering
-  # end
+  end
 
 end
