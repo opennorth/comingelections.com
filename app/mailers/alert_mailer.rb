@@ -3,6 +3,8 @@ class AlertMailer < ActionMailer::Base
 
   def notify(elections)
     @elections = elections
-    mail(to: ENV['ALERT_EMAILS'])
+    User.where(notify: true).each do |user|
+      mail(to: user.email)
+    end
   end
 end
