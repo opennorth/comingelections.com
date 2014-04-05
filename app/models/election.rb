@@ -9,7 +9,7 @@ class Election < ActiveRecord::Base
 
   validates_presence_of :year, :start_date, :end_date, :jurisdiction, :election_type, :source
   validates_presence_of :division, if: :by_election?
-  validates_inclusion_of :jurisdiction, in: ComingElections::JURISDICTIONS
+  validates_inclusion_of :jurisdiction, in: ['Canada'] + ComingElections::PROVINCES_AND_TERRITORIES
   validates_inclusion_of :election_type, in: ComingElections::ELECTION_TYPES
   validates_inclusion_of :scope, in: ComingElections::SCOPES, allow_blank: true
   validate :end_date_must_be_after_start_date

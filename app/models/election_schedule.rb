@@ -5,7 +5,7 @@ class ElectionSchedule < ActiveRecord::Base
   validates_inclusion_of :rank, in: -4..3
   validates_inclusion_of :weekday, in: 0..6
   validates_inclusion_of :month, in: 1..12
-  validates_inclusion_of :jurisdiction, in: ComingElections::JURISDICTIONS
+  validates_inclusion_of :jurisdiction, in: ['Canada'] + ComingElections::PROVINCES_AND_TERRITORIES
   validates_inclusion_of :election_type, in: ComingElections::ELECTION_TYPES
   validates_numericality_of :term_length, only_integer: true, greater_than: 0
   validates_numericality_of :start_year, only_integer: true
