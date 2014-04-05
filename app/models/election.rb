@@ -8,7 +8,6 @@ class Election < ActiveRecord::Base
   before_validation :set_year, :set_end_date
 
   validates_presence_of :year, :start_date, :end_date, :jurisdiction, :election_type, :source
-  validates_presence_of :division, if: :by_election?
   validates_inclusion_of :jurisdiction, in: ['Canada'] + ComingElections::PROVINCES_AND_TERRITORIES
   validates_inclusion_of :election_type, in: ComingElections::ELECTION_TYPES
   validates_inclusion_of :scope, in: ComingElections::SCOPES, allow_blank: true
@@ -35,10 +34,6 @@ class Election < ActiveRecord::Base
         csv << election.attributes.values_at('id', 'year', 'start_date', 'end_date', 'jurisdiction', 'division', 'election_type', 'scope', 'notes', 'source') + [election.scheduled]
       end
     end
-  end
-
-  def by_election?
-    election_type == "by-election"
   end
 
 private
