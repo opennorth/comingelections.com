@@ -2,7 +2,6 @@
 require 'csv'
 
 class Election < ActiveRecord::Base
-  attr_accessible :year, :start_date, :end_date, :jurisdiction, :election_type, :division, :scope, :notes, :source, :scheduled
   attr_accessor :scheduled
 
   before_validation :set_year, :set_end_date
@@ -12,6 +11,17 @@ class Election < ActiveRecord::Base
   validates_inclusion_of :election_type, in: ComingElections::ELECTION_TYPES
   validates_inclusion_of :scope, in: ComingElections::SCOPES, allow_blank: true
   validate :end_date_must_be_after_start_date
+
+  rails_admin do
+    list do
+      field :jurisdiction
+      field :election_type
+      field :start_date
+      field :division
+      field :scope
+      field :notes
+    end
+  end
 
   # @param [Range] range a range of dates
   def self.within(range)

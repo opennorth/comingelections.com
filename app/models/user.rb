@@ -1,5 +1,10 @@
 class User < ActiveRecord::Base
   devise :database_authenticatable, :recoverable, :rememberable, :validatable
 
-  attr_accessible :email, :password, :password_confirmation, :remember_me, :notify
+  rails_admin do
+    list do
+      field :email
+      field :notify
+    end
+  end
 end

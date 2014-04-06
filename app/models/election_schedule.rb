@@ -1,6 +1,4 @@
 class ElectionSchedule < ActiveRecord::Base
-  attr_accessible :rank, :weekday, :month, :term_length, :start_year, :jurisdiction, :election_type, :scope, :notes, :source
-
   validates_presence_of :rank, :weekday, :month, :term_length, :start_year, :jurisdiction, :election_type, :source
   validates_inclusion_of :rank, in: -4..3
   validates_inclusion_of :weekday, in: 0..6
@@ -9,6 +7,21 @@ class ElectionSchedule < ActiveRecord::Base
   validates_inclusion_of :election_type, in: ComingElections::ELECTION_TYPES
   validates_numericality_of :term_length, only_integer: true, greater_than: 0
   validates_numericality_of :start_year, only_integer: true
+
+  rails_admin do
+    list do
+      field :jurisdiction
+      field :rank
+      field :weekday
+      field :month
+      field :term_length
+      field :start_year
+      field :source
+      field :scope
+      field :notes
+      field :election_type
+    end
+  end
 
   # @param [Range] range a range of dates
   def self.within(range)

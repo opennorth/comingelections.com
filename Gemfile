@@ -1,13 +1,10 @@
 source 'https://rubygems.org'
+ruby '2.1.1'
 
-gem 'rails', '3.2.13'
-
-group :assets do
-  gem 'sass-rails',   '~> 3.2.3'
-  gem 'coffee-rails', '~> 3.2.1'
-  gem 'therubyracer', :platforms => :ruby
-  gem 'uglifier', '>= 1.0.3'
-end
+gem 'rails', '4.1.0.rc2'
+gem 'nokogiri'
+gem 'devise'
+gem 'rails_admin'
 
 group :production do
   gem 'pg'
@@ -17,10 +14,3 @@ group :development, :test do
   gem 'rspec-rails'
   gem 'sqlite3'
 end
-
-# Rake tasks
-gem 'nokogiri'
-
-# Admin
-gem 'rails_admin'
-gem 'devise'

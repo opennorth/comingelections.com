@@ -1,5 +1,4 @@
 class CreateElections < ActiveRecord::Migration
-  # @see https://github.com/openelections/specs/wiki/Elections-Data-Spec-Version-2
   def change
     create_table :elections do |t|
       t.integer :year

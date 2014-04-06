@@ -1,223 +1,34 @@
-# RailsAdmin config file. Generated on April 02, 2014 10:12
-# See github.com/sferik/rails_admin for more informations
-
 RailsAdmin.config do |config|
 
+  ### Popular gems integration
 
-  ################  Global configuration  ################
-
-  # Set the admin name here (optional second array element will appear in red). For example:
-  config.main_app_name = ['Coming Elections', 'Admin']
-  # or for a more dynamic name:
-  # config.main_app_name = Proc.new { |controller| [Rails.application.engine_name.titleize, controller.params['action'].titleize] }
-
-  # RailsAdmin may need a way to know who the current user is]
-  config.current_user_method { current_user } # auto-generated
-
-  # If you want to track changes on your models:
-  # config.audit_with :history, 'User'
-
-  # Or with a PaperTrail: (you need to install it first)
-  # config.audit_with :paper_trail, 'User'
-
-  # Display empty fields in show views:
-  # config.compact_show_view = false
-
-  # Number of default rows per-page:
-  # config.default_items_per_page = 20
-
-  # Exclude specific models (keep the others):
-  # config.excluded_models = ['Election', 'ElectionSchedule', 'User']
-
-  # Include specific models (exclude the others):
-  # config.included_models = ['Election', 'ElectionSchedule', 'User']
-
-  # Label methods for model instances:
-  # config.label_methods << :description # Default is [:name, :title]
-
-
-  ################  Model configuration  ################
-
-  # Each model configuration can alternatively:
-  #   - stay here in a `config.model 'ModelName' do ... end` block
-  #   - go in the model definition file in a `rails_admin do ... end` block
-
-  # This is your choice to make:
-  #   - This initializer is loaded once at startup (modifications will show up when restarting the application) but all RailsAdmin configuration would stay in one place.
-  #   - Models are reloaded at each request in development mode (when modified), which may smooth your RailsAdmin development workflow.
-
-
-  # Now you probably need to tour the wiki a bit: https://github.com/sferik/rails_admin/wiki
-  # Anyway, here is how RailsAdmin saw your application's models when you ran the initializer:
-
-
-
-  ###  Election  ###
-
-  config.model 'Election' do
-
-  #   # You can copy this to a 'rails_admin do ... end' block inside your election.rb model definition
-
-  #   # Found associations:
-
-
-
-  #   # Found columns:
-
-  #     configure :id, :integer 
-  #     configure :year, :integer 
-  #     configure :start_date, :date 
-  #     configure :end_date, :date 
-  #     configure :jurisdiction, :string 
-  #     configure :election_type, :string 
-  #     configure :division, :string 
-  #     configure :scope, :string 
-  #     configure :notes, :string 
-  #     configure :source, :string 
-  #     configure :created_at, :datetime 
-  #     configure :updated_at, :datetime 
-
-  #   # Cross-section configuration:
-
-  #     # object_label_method :name     # Name of the method called for pretty printing an *instance* of ModelName
-  #     # label 'My model'              # Name of ModelName (smartly defaults to ActiveRecord's I18n API)
-  #     # label_plural 'My models'      # Same, plural
-  #     # weight 0                      # Navigation priority. Bigger is higher.
-  #     # parent OtherModel             # Set parent model for navigation. MyModel will be nested below. OtherModel will be on first position of the dropdown
-  #     # navigation_label              # Sets dropdown entry's name in navigation. Only for parents!
-
-  #   # Section specific configuration:
-
-      list do
-        field :jurisdiction
-        field :election_type
-        field :start_date
-        field :division
-        field :scope
-        field :notes
-  #       # filters [:id, :name]  # Array of field names which filters should be shown by default in the table header
-  #       # items_per_page 100    # Override default_items_per_page
-  #       # sort_by :id           # Sort column (default is primary key)
-  #       # sort_reverse true     # Sort direction (default is true for primary key, last created first)
-      end
-  #     show do; end
-  #     edit do; end
-  #     export do; end
-  #     # also see the create, update, modal and nested sections, which override edit in specific cases (resp. when creating, updating, modifying from another model in a popup modal or modifying from another model nested form)
-  #     # you can override a cross-section field configuration in any section with the same syntax `configure :field_name do ... end`
-  #     # using `field` instead of `configure` will exclude all other fields and force the ordering
+  ## == Devise ==
+  config.authenticate_with do
+    warden.authenticate! scope: :user
   end
+  config.current_user_method(&:current_user)
 
+  ## == Cancan ==
+  # config.authorize_with :cancan
 
-  ###  ElectionSchedule  ###
+  ## == PaperTrail ==
+  # config.audit_with :paper_trail, 'User', 'PaperTrail::Version' # PaperTrail >= 3.0.0
 
-  config.model 'ElectionSchedule' do
+  ### More at https://github.com/sferik/rails_admin/wiki/Base-configuration
 
-  #   # You can copy this to a 'rails_admin do ... end' block inside your election_schedule.rb model definition
+  config.actions do
+    dashboard                     # mandatory
+    index                         # mandatory
+    new
+    export
+    bulk_delete
+    show
+    edit
+    delete
+    show_in_app
 
-  #   # Found associations:
-
-
-
-  #   # Found columns:
-
-  #     configure :id, :integer 
-  #     configure :rank, :integer 
-  #     configure :weekday, :integer 
-  #     configure :month, :integer 
-  #     configure :term_length, :integer 
-  #     configure :start_year, :integer 
-  #     configure :jurisdiction, :string 
-  #     configure :election_type, :string 
-  #     configure :scope, :string 
-  #     configure :notes, :string 
-  #     configure :source, :string 
-  #     configure :created_at, :datetime 
-  #     configure :updated_at, :datetime 
-
-  #   # Cross-section configuration:
-
-  #     # object_label_method :name     # Name of the method called for pretty printing an *instance* of ModelName
-  #     # label 'My model'              # Name of ModelName (smartly defaults to ActiveRecord's I18n API)
-  #     # label_plural 'My models'      # Same, plural
-  #     # weight 0                      # Navigation priority. Bigger is higher.
-  #     # parent OtherModel             # Set parent model for navigation. MyModel will be nested below. OtherModel will be on first position of the dropdown
-  #     # navigation_label              # Sets dropdown entry's name in navigation. Only for parents!
-
-  #   # Section specific configuration:
-
-      list do
-        field :jurisdiction
-        field :rank
-        field :weekday
-        field :month
-        field :term_length
-        field :start_year
-        field :source
-        field :scope
-        field :notes
-        field :election_type
-  #       # filters [:id, :name]  # Array of field names which filters should be shown by default in the table header
-  #       # items_per_page 100    # Override default_items_per_page
-  #       # sort_by :id           # Sort column (default is primary key)
-  #       # sort_reverse true     # Sort direction (default is true for primary key, last created first)
-      end
-  #     show do; end
-  #     edit do; end
-  #     export do; end
-  #     # also see the create, update, modal and nested sections, which override edit in specific cases (resp. when creating, updating, modifying from another model in a popup modal or modifying from another model nested form)
-  #     # you can override a cross-section field configuration in any section with the same syntax `configure :field_name do ... end`
-  #     # using `field` instead of `configure` will exclude all other fields and force the ordering
+    ## With an audit adapter, you can add:
+    # history_index
+    # history_show
   end
-
-
-  ###  User  ###
-
-  config.model 'User' do
-
-  #   # You can copy this to a 'rails_admin do ... end' block inside your user.rb model definition
-
-  #   # Found associations:
-
-
-
-  #   # Found columns:
-
-  #     configure :id, :integer 
-  #     configure :email, :string 
-  #     configure :password, :password         # Hidden 
-  #     configure :password_confirmation, :password         # Hidden 
-  #     configure :reset_password_token, :string         # Hidden 
-  #     configure :reset_password_sent_at, :datetime 
-  #     configure :remember_created_at, :datetime 
-  #     configure :created_at, :datetime 
-  #     configure :updated_at, :datetime 
-
-  #   # Cross-section configuration:
-
-  #     # object_label_method :name     # Name of the method called for pretty printing an *instance* of ModelName
-  #     # label 'My model'              # Name of ModelName (smartly defaults to ActiveRecord's I18n API)
-  #     # label_plural 'My models'      # Same, plural
-  #     # weight 0                      # Navigation priority. Bigger is higher.
-  #     # parent OtherModel             # Set parent model for navigation. MyModel will be nested below. OtherModel will be on first position of the dropdown
-  #     # navigation_label              # Sets dropdown entry's name in navigation. Only for parents!
-
-  #   # Section specific configuration:
-
-      list do
-        field :email
-        field :notify
-  #       # filters [:id, :name]  # Array of field names which filters should be shown by default in the table header
-  #       # items_per_page 100    # Override default_items_per_page
-  #       # sort_by :id           # Sort column (default is primary key)
-  #       # sort_reverse true     # Sort direction (default is true for primary key, last created first)
-      end
-  #     show do; end
-  #     edit do; end
-  #     export do; end
-  #     # also see the create, update, modal and nested sections, which override edit in specific cases (resp. when creating, updating, modifying from another model in a popup modal or modifying from another model nested form)
-  #     # you can override a cross-section field configuration in any section with the same syntax `configure :field_name do ... end`
-  #     # using `field` instead of `configure` will exclude all other fields and force the ordering
-  end
-
 end

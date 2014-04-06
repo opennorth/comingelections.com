@@ -13,7 +13,7 @@ A simple service to alert you of upcoming elections in Canada.
 ## Deployment
 
     heroku apps:create --addons scheduler:standard sendgrid:starter
-    heroku config:add SECRET_TOKEN=`bundle exec rake secret`
+    heroku config:add SECRET_KEY_BASE=`bundle exec rake secret`
     git push heroku master
 
 ## Bugs? Questions?
