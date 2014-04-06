@@ -67,7 +67,6 @@ namespace :scrape do
             jurisdiction: jurisdiction,
             election_type: 'municipal',
             scope: scope,
-            notes: notes,
             source: source,
           })
         end

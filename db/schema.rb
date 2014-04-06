@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130528153611) do
+ActiveRecord::Schema.define(:version => 20140402134923) do
 
   create_table "election_schedules", :force => true do |t|
     t.integer  "rank"
@@ -63,6 +63,7 @@ ActiveRecord::Schema.define(:version => 20130528153611) do
     t.datetime "remember_created_at"
     t.datetime "created_at",                             :null => false
     t.datetime "updated_at",                             :null => false
+    t.boolean  "notify"
   end
 
   add_index "users", ["email"], :name => "index_users_on_email", :unique => true

@@ -1,14 +1,15 @@
-<div class="span9">
+<!-- @todo Coming elections facet by province and level of gov? -->
+<div class="col-sm-9">
   <h1>
     Upcoming Elections
-    <%= link_to "CSV", elections_path(format: "csv"), class: "btn btn-success pull-right" %>
+    <%= link_to 'CSV', elections_path(format: 'csv'), class: 'btn btn-primary pull-right' %>
   </h1>
 
-  <table class="table table-striped">
+  <table class="table table-striped table-hover table-condensed">
     <thead>
       <tr>
         <th>Date</th>
-        <th>Details</th>
+        <th>Election</th>
         <th>Source</th>
         <th>Updated</th>
       </tr>
@@ -17,21 +18,24 @@
       <% @elections.each do |election| %>
         <tr>
           <td>
-            <%= election.start_date %>
+            <%=l election.start_date, format: :short %>
             <% if election.scheduled %>
-            <span class="label">Scheduled</span>
+            <span class="label label-default">Scheduled</span>
             <% end %>
           </td>
           <td>
-            <p><%= election.jurisdiction %> <%= election.election_type %><% if election.division? %>, <%= election.division %><% end %></p>
-            <% if election.scope? %>
-              <p><%= election.scope %></p>
-            <% end %>
-            <% if election.notes? %>
-              <p><%= election.notes %></p>
-            <% end %>
+            <p>
+              <strong><%= election.jurisdiction %></strong>
+              <%= election.election_type %>
+              <% if election.division? %>
+                in <strong><%= election.division %></strong>
+              <% end %>
+              <% if election.scope? %>
+                (<%= election.scope %><% if election.notes? && election.scope != election.notes %>: <%= election.notes %><% end %>)
+              <% end %>
+            </p>
           </td>
-          <td><%= link_to truncate(election.source), election.source %></td>
+          <td><%= link_to URI.parse(election.source).host, election.source %></td>
           <td><%=l election.updated_at.to_date, format: :short %></td>
         </tr>
       <% end %>
@@ -39,7 +43,7 @@
   </table>
 </div>
 
-<div class="span3">
+<div class="col-sm-3 hidden-xs">
   <a class="twitter-timeline" href="https://twitter.com/comingelections/elections" data-widget-id="337208167597473792">Tweets from @comingelections/elections</a>
   <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
 </div>

@@ -1,33 +1,25 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title><%= content_for?(:title) ? yield(:title) : "Coming Elections" %></title>
-<%= csrf_meta_tags %>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>Coming Elections</title>
+<meta name="description" content="A constantly-updated list of upcoming elections in Canada">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
 <!--[if lt IE 9]>
-<script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.6.1/html5shiv.js"></script>
+<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
 <![endif]-->
-<%= stylesheet_link_tag "application", :media => "all" %>
 </head>
 <body>
 
-<div class="navbar navbar-fluid-top">
-  <div class="navbar-inner">
-    <div class="container-fluid">
-      <span class="brand">Coming Elections</span>
-    </div>
-  </div>
-</div>
-
-<div class="container-fluid">
-  <div class="row-fluid">
-<%= bootstrap_flash %>
+<div class="container-fluid" style="margin-top: 20px">
+  <div class="row">
 <%= yield %>
   </div>
 </div>
 
-<%= javascript_include_tag "application" %>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
 </body>
 </html>

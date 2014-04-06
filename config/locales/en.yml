@@ -8,6 +8,7 @@ en:
   date:
     formats:
       long: '%B %e, %Y'
+      short: '%b %e'
   activerecord:
     attributes:
       election:

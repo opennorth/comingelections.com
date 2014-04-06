@@ -11,7 +11,6 @@ end
 
 group :production do
   gem 'pg'
-  gem 'sentry-raven'
 end
 
 group :development, :test do
@@ -19,13 +18,7 @@ group :development, :test do
   gem 'sqlite3'
 end
 
-# Views
-gem 'jquery-rails'
-gem 'twitter-bootstrap-rails'
-gem 'less-rails'
-
 # Rake tasks
-gem 'json'
 gem 'nokogiri'
 
 # Admin
