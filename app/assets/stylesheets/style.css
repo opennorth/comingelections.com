@@ -1,0 +1,28 @@
+.container-fluid {
+  margin-top: 20px;
+}
+h1 {
+  margin-top: 0;
+}
+.date,
+.updated {
+  white-space: nowrap;
+}
+@media (max-width: 767px) {
+  .container-fluid {
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .row {
+    margin-left: 0;
+    margin-right: 0;
+  }
+  .col-sm-9,
+  .col-sm-3 {
+    padding-left: 0;
+    padding-right: 0;
+  }
+  h1 {
+    font-size: 24px;
+  }
+}

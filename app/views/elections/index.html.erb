@@ -10,13 +10,13 @@
         <th>Date</th>
         <th>Election</th>
         <th>Source</th>
-        <th>Updated</th>
+        <th class="hidden-xs">Updated</th>
       </tr>
     </thead>
     <tbody>
       <% @elections.each do |election| %>
         <tr>
-          <td>
+          <td class="date">
             <%=l election.start_date, format: :short %>
             <% if election.scheduled %>
             <span class="label label-default">Scheduled</span>
@@ -34,8 +34,8 @@
               <% end %>
             </p>
           </td>
-          <td><%= link_to URI.parse(election.source).host, election.source %></td>
-          <td><%=l election.updated_at.to_date, format: :short %></td>
+          <td><%= link_to host(election.source), election.source %></td>
+          <td class="updated hidden-xs"><%=l election.updated_at.to_date, format: :short %></td>
         </tr>
       <% end %>
     </tbody>
