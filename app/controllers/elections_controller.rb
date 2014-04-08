@@ -1,6 +1,6 @@
 class ElectionsController < ApplicationController
   def index
-    range = Date.today..1.year.from_now.to_date
+    range = Date.today..2.years.from_now.to_date
     @elections = (Election.within(range) + ElectionSchedule.within(range)).sort_by(&:start_date)
 
     respond_to do |format|
