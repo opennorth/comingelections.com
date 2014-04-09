@@ -45,12 +45,11 @@ A simple service to alert you of upcoming elections in Canada.
 * [Quebec](http://www.cic.gc.ca/english/resources/publications/discover/section-09.asp)
 * [Saskatchewan](http://www.legassembly.sk.ca/about/election-of-a-member/)
 * [Northwest Territories](http://www.maca.gov.nt.ca/?page_id=3632)
-* [Municipal (Canadian Labour Congress)]
-(http://www.canadianlabour.ca/action-center/municipalities-matter/municipal-election-chart-province-territory)
-* [Municipal (Muniscope)](http://www.icurr.org/research/municipal_facts/Elections/index.php)
-* [Municipal (Wikipedia)](http://en.wikipedia.org/wiki/Municipal_elections_in_Canada)
 * [Federal, provincial and territorial levels (parl.gc.ca)](http://www.parl.gc.ca/ParlInfo/Compilations/ProvinceTerritory/ProvincialFixedElections.aspx)
 * [Federal, provincial and territorial levels (Wikipedia)](http://en.wikipedia.org/wiki/Fixed_election_dates_in_Canada)
+* [Municipal (Muniscope)](http://www.icurr.org/research/municipal_facts/Elections/index.php)
+* [Municipal (Canadian Labour Congress)](http://www.canadianlabour.ca/action-center/municipalities-matter/municipal-election-chart-province-territory)
+* [Municipal (Wikipedia)](http://en.wikipedia.org/wiki/Municipal_elections_in_Canada)
 
 ## Bugs? Questions?
 
