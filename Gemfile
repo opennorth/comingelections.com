@@ -5,7 +5,7 @@ gem 'rails', '4.1.7'
 gem 'uglifier'
 gem 'nokogiri'
 gem 'devise'
-gem 'rails_admin'
+gem 'rails_admin', '0.6.3'
 
 group :production do
   gem 'pg'
