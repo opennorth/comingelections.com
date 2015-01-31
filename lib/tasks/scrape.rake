@@ -141,7 +141,7 @@ namespace :scrape do
       end
     end
 
-    doc = Nokogiri::HTML(open('http://en.wikipedia.org/wiki/Canadian_electoral_calendar'))
+    doc = Nokogiri::HTML(open('https://en.wikipedia.org/wiki/Canadian_electoral_calendar'))
     doc.xpath('//div[@id="mw-content-text"]/ul/li/a').each do |a|
       year = a.text.to_i
       if year >= 2007 && a[:class] != 'new' # The format before 2007 is different, and we don't need history that far back.

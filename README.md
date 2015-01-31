@@ -46,12 +46,12 @@ A simple service to alert you of upcoming elections in Canada.
 * [Saskatchewan](http://www.legassembly.sk.ca/about/election-of-a-member/)
 * [Northwest Territories](http://www.maca.gov.nt.ca/?page_id=3632)
 * [Federal, provincial and territorial levels (parl.gc.ca)](http://www.parl.gc.ca/ParlInfo/Compilations/ProvinceTerritory/ProvincialFixedElections.aspx)
-* [Federal, provincial and territorial levels (Wikipedia)](http://en.wikipedia.org/wiki/Fixed_election_dates_in_Canada)
+* [Federal, provincial and territorial levels (Wikipedia)](https://en.wikipedia.org/wiki/Fixed_election_dates_in_Canada)
 * [Municipal (Canadian Labour Congress)](http://www.canadianlabour.ca/action-center/municipalities-matter/municipal-election-chart-province-territory)
-* [Municipal (Wikipedia)](http://en.wikipedia.org/wiki/Municipal_elections_in_Canada)
+* [Municipal (Wikipedia)](https://en.wikipedia.org/wiki/Municipal_elections_in_Canada)
 
 ## Bugs? Questions?
 
-This repository is on GitHub: [http://github.com/opennorth/comingelections](http://github.com/opennorth/comingelections), where your contributions, forks, bug reports, feature requests, and feedback are greatly welcomed.
+This repository is on GitHub: [https://github.com/opennorth/comingelections](https://github.com/opennorth/comingelections), where your contributions, forks, bug reports, feature requests, and feedback are greatly welcomed.
 
 Copyright (c) 2013 Open North Inc., released under the MIT license
