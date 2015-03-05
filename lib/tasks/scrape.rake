@@ -5,6 +5,16 @@ require 'open-uri'
 MONTHS = I18n.t('date.month_names').drop(1)
 
 namespace :scrape do
+  def logger
+    @logger ||= begin
+      Rails.logger = Logger.new(STDOUT)
+      Rails.logger.formatter = proc do |severity, datetime, progname, msg|
+        "#{msg}\n"
+      end
+      Rails.logger
+    end
+  end
+
   desc "Scrape the Public Service Commission of Canada"
   task public_service_commission: :environment do
     source = 'http://www.psc-cfp.gc.ca/plac-acpl/leave-conge/ann2-eng.htm'
@@ -27,21 +37,25 @@ namespace :scrape do
         scope, type = type, 'municipal'
       end
 
-      Election.create_or_update({
-        start_date: Date.parse(tds[2].text),
-        jurisdiction: tds[0].text,
-        election_type: type,
-        scope: scope,
-        notes: notes,
-        source: source,
-      })
+      begin
+        Election.create_or_update({
+          start_date: Date.parse(tds[2].text),
+          jurisdiction: tds[0].text,
+          election_type: type,
+          scope: scope,
+          notes: notes,
+          source: source,
+        })
+      rescue ArgumentError => e
+        logger.error("#{e.message}: #{tds[2].text}")
+      end
     end
   end
 
   # @todo Compare to schedules. If identical, remove this Rake task.
   # @see https://docs.google.com/a/opennorth.ca/spreadsheet/ccc?key=0AtzgYYy0ZABtdHU4ZUxlNEFKbWRvN242M0hPRVBQMWc&usp=drive_web#gid=0
   desc "Scrape Muniscope"
-  task :muniscope => :environment do
+  task muniscope: :environment do
     source = 'http://www.icurr.org/research/municipal_facts/Elections/index.php'
     doc = Nokogiri::HTML(open(source))
 
@@ -62,20 +76,24 @@ namespace :scrape do
             scope = texts[index - 1].gsub("\n", '').sub(/\AFor /, '').sub(/:\z/, '').downcase.strip
           end
 
-          Election.create_or_update({
-            start_date: Date.parse(text),
-            jurisdiction: jurisdiction,
-            election_type: 'municipal',
-            scope: scope,
-            source: source,
-          })
+          begin
+            Election.create_or_update({
+              start_date: Date.parse(text),
+              jurisdiction: jurisdiction,
+              election_type: 'municipal',
+              scope: scope,
+              source: source,
+            })
+          rescue ActiveRecord::RecordInvalid => e
+            logger.error("#{e.message}: #{scope}")
+          end
         end
       end
     end
   end
 
   desc "Scrape Wikipedia"
-  task :wikipedia => :environment do
+  task wikipedia: :environment do
     def pattern(values)
       values.map{|value| Regexp.escape(value)}.join('|')
     end
@@ -148,6 +166,7 @@ namespace :scrape do
         source = "http://en.wikipedia.org#{a[:href]}"
 
         doc = Nokogiri::HTML(open(source))
+        doc.xpath('//span[@id="Unknown_date"]/../following-sibling::ul[1]').remove
         doc.xpath('//div[@id="mw-content-text"]/ul/li').each do |li|
           next if ['Municipal elections in Canada', 'Elections in Canada'].include?(li.text) || li.text[/\b(co-spokesperson election|leadership election|plebiscites?|referendum|school board elections|senate nominee election)\b/i]
 
@@ -167,7 +186,7 @@ namespace :scrape do
             date, *lines = date.split(/\n+/)
           else
             # Unknown date, usually
-            puts "#{source} #{date}"
+            logger.error("can't parse: #{source} #{date}")
             next
           end
 
@@ -264,7 +283,7 @@ namespace :scrape do
             text.sub!(/\Aand\z/, '')
 
             unless text.empty? # For now, only wards, districts, boroughs, etc. should remain.
-              puts "#{year}  #{election_type.ljust(11)}  #{text.ljust(50)}  #{original_text.inspect}"
+              logger.error("leftover text: year=#{year}  election_type=#{election_type.ljust(12)}  text=#{text.ljust(50)}  #{original_text.inspect}")
               next
             end
 
@@ -280,14 +299,14 @@ namespace :scrape do
               begin
                 Election.create_or_update(attributes)
               rescue ActiveRecord::RecordInvalid => e
-                puts "#{e.message}: #{original_text.inspect}: #{attributes.inspect}"
+                logger.error("#{e.message}: #{original_text.inspect}: #{attributes.inspect}")
               end
             else
               divisions.each do |division|
                 begin
                   Election.create_or_update(attributes.merge(division: division))
                 rescue ActiveRecord::RecordInvalid => e
-                  puts "#{e.message}: #{original_text.inspect}: #{attributes.inspect}"
+                  logger.error("#{e.message}: #{original_text.inspect}: #{attributes.inspect}")
                 end
               end
             end

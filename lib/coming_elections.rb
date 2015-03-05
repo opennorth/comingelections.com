@@ -1,19 +1,26 @@
 # coding: utf-8
 
 module ComingElections
-  ELECTION_TYPES = %w(general by-election municipal mayoral)
+  ELECTION_TYPES = [
+    'general',
+    'by-election',
+    'municipal',
+    'mayoral',
+  ]
 
   SCOPES = [
     'cities and (southern) towns and villages',
-    'cities, towns and villages',
+    'cities, (southern) towns and villages',
     'cities, cornwall, & stratford',
+    'cities, towns and villages',
     'even-numbered rural municipalities',
     'excluding charlottetown, cornwall, stratford and summerside',
     'charlottetown, cornwall, stratford and summerside', # must come after
-    'odd-numbered rural municipalities',
     'hamlets',
     'mayoral',
     'municipalities',
+    'northern municipalities (northern towns, villages and hamlets)',
+    'odd-numbered rural municipalities',
     'resort villages',
     'rural municipalities',
     'taxed communities',
