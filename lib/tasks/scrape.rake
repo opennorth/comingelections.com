@@ -171,14 +171,15 @@ namespace :scrape do
         doc.xpath('//span[@id="Unknown_date"]/../following-sibling::ul[1]').remove
         doc.xpath('//span[@id="See_also"]/../following-sibling::ul[1]').remove
         doc.xpath('//div[@id="mw-content-text"]/ul/li').each do |li|
-          next if li.text[/\b(co-spokesperson election|leadership election|plebiscites?|referendum|school board elections|senate nominee election)\b/i]
+          next if li.text[/\b(co-spokesperson election|leadership election|plebiscites?|referendum|school board|senate nominee election)\b/i]
 
           original_text = li.text
 
           # Clean the string of needless information.
           text = original_text.dup
           # @see https://en.wikipedia.org/wiki/Canadian_electoral_calendar,_2007
-          text.gsub!(/\[\d+\]|\(postponed from general\)|\. See also [A-Za-z ]+ provincial by-elections|\b(?:for|in|Canadian|(?:City|Regional) Council)\b|,? #{year}\.?| elections?\b/i, '')
+          # @see https://en.wikipedia.org/wiki/Canadian_electoral_calendar,_2014
+          text.gsub!(/\[\d+\]|\(postponed from [^)]+\)|\. See also [A-Za-z ]+ provincial by-elections|\b(?:for|in|Canadian|(?:City|Regional) Council)\b|,? #{year}\.?| elections?\b/i, '')
           text.chomp!('.')
           text.strip!
           text.squeeze!(' ')
@@ -204,19 +205,23 @@ namespace :scrape do
             scope = text.slice!(SCOPES)
             scope.downcase! if scope
 
+            # @todo 2014 sometimes declares by-elections in different provinces in one line.
             jurisdiction = nil
             divisions = []
 
             # There may be a hint as to which province or territory the election is in.
             hint = text['Quebec City'] ? nil : text.slice!(PROVINCES_AND_TERRITORIES)
-            text = text.sub('Quebec City', 'Québec').sub('()', '').strip.chomp(',').strip
-            text.sub!(/\Aand +/, '')
+            text.gsub!(hint, '') if hint
+            text = text.sub('Quebec City', 'Québec').sub('()', '').strip.chomp(',').strip.sub(/\Aand +/, '')
             level = 'municipal' if scope == 'mayoral'
 
             # Process by-elections.
             if %w(by-elections by-election).include?(election_type)
+              # Make it easy to see, in error messages, if parts are properly identified.
+              text.gsub!(/,[, ]+(?:and )?| and /, '|')
+
               # There may be by-elections in multiple divisions.
-              parts = text.split(/, +(?:and )?| and /)
+              parts = text.split('|')
 
               if level == 'federal'
                 jurisdiction = 'Canada'
@@ -240,6 +245,8 @@ namespace :scrape do
                       divisions << text.slice!(parts[0])
                     end
                   end
+                else
+                  # @todo 2014 sometimes declares elections in different municipalities in one line.
                 end
               else # Provincial by-elections often omit the province name.
                 matched = []
@@ -285,8 +292,7 @@ namespace :scrape do
               end
             end
 
-            text.gsub!(/\A[, ]+|[, ]+\z/, '')
-            text.sub!(/\Aand\z/, '')
+            text.sub!(/\A\|+\z/, '')
 
             unless text.empty? # For now, only wards, districts, boroughs, etc. should remain.
               logger.error("year=#{year}  type=#{election_type.ljust(12)}  text=#{text.ljust(50)}  #{original_text.inspect}")
