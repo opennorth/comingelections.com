@@ -105,14 +105,16 @@ namespace :scrape do
     SCOPES = Regexp.new(pattern(ComingElections::SCOPES), Regexp::IGNORECASE)
     PROVINCES_AND_TERRITORIES = Regexp.new(pattern(ComingElections::PROVINCES_AND_TERRITORIES))
 
-    # The following divisions no longer exist:
-    SKIP = Regexp.new(pattern([
-      'Cape Breton North',
-      'Charlevoix',
-      'Markham',
-      'Kamouraska-Témiscouata',
-      'Rivière-du-Loup',
-      'Vancouver-Burrard',
+    OLD_DIVISIONS = Regexp.new(pattern([
+      'Cape Breton North', # https://en.wikipedia.org/wiki/Cape_Breton_North
+      'Charlevoix', # https://en.wikipedia.org/wiki/Charlevoix_%28provincial_electoral_district%29
+      'Kent', # https://en.wikipedia.org/wiki/Kent_%28provincial_electoral_district%29
+      'Markham', # https://en.wikipedia.org/wiki/Markham_%28provincial_electoral_district%29
+      'New Maryland-Sunbury West', # https://en.wikipedia.org/wiki/New_Maryland-Sunbury
+      'Kamouraska-Témiscouata', # https://en.wikipedia.org/wiki/Kamouraska-T%C3%A9miscouata
+      'Restigouche-La-Vallée', # https://en.wikipedia.org/wiki/Restigouche-La-Vall%C3%A9e
+      'Rivière-du-Loup', # https://en.wikipedia.org/wiki/Rivi%C3%A8re-du-Loup_%28electoral_district%29
+      'Vancouver-Burrard', # https://en.wikipedia.org/wiki/Vancouver-Burrard
     ]))
 
     # No OCD-IDs yet.
@@ -123,20 +125,20 @@ namespace :scrape do
       'Nunavut' => [
         normalize('Iqaluit West'),
         normalize('Rankin Inlet South'),
+        normalize('Uqqummiut'),
       ],
     }
 
     codes = {}
-    CSV.parse(open('https://raw.github.com/opencivicdata/ocd-division-ids/master/identifiers/country-ca/ca_provinces_and_territories.csv')).drop(1).each do |_,name,_,_,sgc|
+    CSV.parse(open('https://raw.githubusercontent.com/opencivicdata/ocd-division-ids/master/identifiers/country-ca/ca_provinces_and_territories.csv')).drop(1).each do |_,name,_,_,sgc|
       codes[sgc] = name
     end
-
     names['Canada'] = []
-    CSV.parse(open('https://raw.github.com/opencivicdata/ocd-division-ids/master/identifiers/country-ca/ca_federal_electoral_districts.csv')).drop(1).each do |_,name|
+    CSV.parse(open('https://raw.githubusercontent.com/opencivicdata/ocd-division-ids/master/identifiers/country-ca/ca_federal_electoral_districts.csv')).drop(1).each do |_,name|
       names['Canada'] << normalize(name)
     end
     names['Municipal'] = {}
-    CSV.parse(open('https://raw.github.com/opencivicdata/ocd-division-ids/master/identifiers/country-ca/ca_census_subdivisions.csv')).drop(1).each do |id,name|
+    CSV.parse(open('https://raw.githubusercontent.com/opencivicdata/ocd-division-ids/master/identifiers/country-ca/ca_census_subdivisions.csv')).drop(1).each do |id,name|
       province_or_territory = codes[id.split(':')[-1][0, 2]]
       names['Municipal'][province_or_territory] ||= []
       names['Municipal'][province_or_territory] << normalize(name)
@@ -167,13 +169,16 @@ namespace :scrape do
 
         doc = Nokogiri::HTML(open(source))
         doc.xpath('//span[@id="Unknown_date"]/../following-sibling::ul[1]').remove
+        doc.xpath('//span[@id="See_also"]/../following-sibling::ul[1]').remove
         doc.xpath('//div[@id="mw-content-text"]/ul/li').each do |li|
-          next if ['Municipal elections in Canada', 'Elections in Canada'].include?(li.text) || li.text[/\b(co-spokesperson election|leadership election|plebiscites?|referendum|school board elections|senate nominee election)\b/i]
+          next if li.text[/\b(co-spokesperson election|leadership election|plebiscites?|referendum|school board elections|senate nominee election)\b/i]
+
+          original_text = li.text
 
           # Clean the string of needless information.
-          original_text = li.text
           text = original_text.dup
-          text.gsub!(/\[1\]|\(postponed from general\)|\. See also [A-Za-z ]+ provincial by-elections|\b(?:for|in|Canadian|(?:City|Regional) Council)\b|,? #{year}\.?| elections?\b/i, '')
+          # @see https://en.wikipedia.org/wiki/Canadian_electoral_calendar,_2007
+          text.gsub!(/\[\d+\]|\(postponed from general\)|\. See also [A-Za-z ]+ provincial by-elections|\b(?:for|in|Canadian|(?:City|Regional) Council)\b|,? #{year}\.?| elections?\b/i, '')
           text.chomp!('.')
           text.strip!
           text.squeeze!(' ')
@@ -191,7 +196,7 @@ namespace :scrape do
           end
 
           lines.each do |text|
-            next if text[SKIP]
+            next if text[OLD_DIVISIONS]
 
             election_type = text.slice!(/\b(?:general|by-elections?)\b/i)
             level = text.slice!(/\b(?:federal|provincial|territorial|municipal)\b/i)
@@ -205,12 +210,13 @@ namespace :scrape do
             # There may be a hint as to which province or territory the election is in.
             hint = text['Quebec City'] ? nil : text.slice!(PROVINCES_AND_TERRITORIES)
             text = text.sub('Quebec City', 'Québec').sub('()', '').strip.chomp(',').strip
+            text.sub!(/\Aand +/, '')
             level = 'municipal' if scope == 'mayoral'
 
             # Process by-elections.
             if %w(by-elections by-election).include?(election_type)
               # There may be by-elections in multiple divisions.
-              parts = text.split(/, (?:and )?| and /)
+              parts = text.split(/, +(?:and )?| and /)
 
               if level == 'federal'
                 jurisdiction = 'Canada'
@@ -283,7 +289,7 @@ namespace :scrape do
             text.sub!(/\Aand\z/, '')
 
             unless text.empty? # For now, only wards, districts, boroughs, etc. should remain.
-              logger.error("leftover text: year=#{year}  election_type=#{election_type.ljust(12)}  text=#{text.ljust(50)}  #{original_text.inspect}")
+              logger.error("year=#{year}  type=#{election_type.ljust(12)}  text=#{text.ljust(50)}  #{original_text.inspect}")
               next
             end
 
