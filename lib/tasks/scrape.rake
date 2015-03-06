@@ -36,6 +36,10 @@ namespace :scrape do
       if ['cities, towns and villages', 'hamlets', 'municipalities', 'resort villages', 'rural municipalities'].include?(type)
         scope, type = type, 'municipal'
       end
+      if ['cities, towns and villages', 'hamlets', 'municipalities', 'resort villages', 'rural municipalities'].include?(notes)
+        scope = notes
+        notes = nil
+      end
 
       begin
         Election.create_or_update({
